@@ -4,15 +4,11 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
-  title: 'Premium Jersey Storefront',
-  description: 'Where Legends Are Worn - Premium jerseys for fans who live the game.',
+  title: 'Jersey World B — Premium Jerseys',
+  description: 'Premium soccer and basketball jerseys. AC Milan, Barcelona, Bayern Munich, Chelsea, NBA and more.',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className="bg-white text-black">
