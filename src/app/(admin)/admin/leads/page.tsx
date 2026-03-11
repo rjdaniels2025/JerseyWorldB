@@ -33,7 +33,7 @@ export default function AdminLeads() {
   const filtered = filter === 'all' ? leads : leads.filter(l => l.status === filter)
 
   return (
-    <div className="p-8">
+    <div className="p-8 pt-16">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-black text-white">Leads</h1>
