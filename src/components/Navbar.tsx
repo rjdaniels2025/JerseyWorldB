@@ -16,31 +16,42 @@ export default function Navbar() {
 
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-      isScrolled ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-200' : 'bg-white'
+      isScrolled
+        ? 'bg-[#111111]/95 backdrop-blur-md shadow-lg border-b border-[#333]'
+        : 'bg-[#111111]'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 md:h-20">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <span className="font-black text-xl tracking-tight">JERSEY</span>
-          <span className="font-black text-xl tracking-tight text-gray-400">WORLD</span>
-          <span className="font-black text-xl tracking-tight">B</span>
+        <Link href="/" className="flex items-center gap-1 hover:opacity-80 transition-opacity">
+          <span className="font-black text-xl tracking-tight text-white">JERSEY</span>
+          <span className="font-black text-xl tracking-tight text-[#c9a84c] mx-1">WORLD</span>
+          <span className="font-black text-xl tracking-tight text-white">B</span>
         </Link>
 
         {/* Center Nav */}
         <div className="hidden md:flex items-center gap-10">
-          <Link href="/" className="text-sm font-medium hover:text-gray-500 transition-colors">Home</Link>
-          <Link href="/shop" className="text-sm font-medium hover:text-gray-500 transition-colors">Shop</Link>
-          <Link href="/contact" className="text-sm font-medium hover:text-gray-500 transition-colors">Contact</Link>
+          {['/', '/shop', '/contact'].map((href, i) => (
+            <Link
+              key={href}
+              href={href}
+              className="text-sm font-medium text-gray-300 hover:text-[#c9a84c] transition-colors"
+            >
+              {['Home', 'Shop', 'Contact'][i]}
+            </Link>
+          ))}
         </div>
 
         {/* Right */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Link href="/shop">
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Cart">
+            <button className="p-2 hover:bg-[#222] rounded-lg transition-colors text-gray-300 hover:text-[#c9a84c]">
               <ShoppingCart size={20} />
             </button>
           </Link>
-          <button className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors" onClick={() => setMenuOpen(!menuOpen)}>
+          <button
+            className="md:hidden p-2 hover:bg-[#222] rounded-lg transition-colors text-gray-300"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
@@ -48,11 +59,18 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="md:hidden border-t border-gray-200 px-4 py-4 bg-white">
+        <div className="md:hidden border-t border-[#333] px-4 py-4 bg-[#111]">
           <div className="flex flex-col gap-4">
-            <Link href="/" className="text-sm font-medium" onClick={() => setMenuOpen(false)}>Home</Link>
-            <Link href="/shop" className="text-sm font-medium" onClick={() => setMenuOpen(false)}>Shop</Link>
-            <Link href="/contact" className="text-sm font-medium" onClick={() => setMenuOpen(false)}>Contact</Link>
+            {[['/', 'Home'], ['/shop', 'Shop'], ['/contact', 'Contact']].map(([href, label]) => (
+              <Link
+                key={href}
+                href={href}
+                className="text-sm font-medium text-gray-300 hover:text-[#c9a84c] transition-colors"
+                onClick={() => setMenuOpen(false)}
+              >
+                {label}
+              </Link>
+            ))}
           </div>
         </div>
       )}
