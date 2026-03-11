@@ -2,16 +2,17 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, Pencil, Trash2, Star } from 'lucide-react'
-import type { Product, Category } from '@/lib/supabase/types'
+import { Plus, Pencil, Trash2, Star, Upload, X } from 'lucide-react'
 
 export default function AdminProducts() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
+  const [products, setProducts] = useState<any[]>([])
+  const [categories, setCategories] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [editing, setEditing] = useState<Product | null>(null)
+  const [editing, setEditing] = useState<any>(null)
   const [form, setForm] = useState({ title: '', description: '', price: '', category_id: '', featured: false })
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [uploading, setUploading] = useState(false)
   const supabase = createClient()
 
   const load = async () => {
@@ -26,18 +27,43 @@ export default function AdminProducts() {
 
   useEffect(() => { load() }, [])
 
-  const openAdd = () => { setEditing(null); setForm({ title: '', description: '', price: '', category_id: '', featured: false }); setShowForm(true) }
-  const openEdit = (p: Product) => { setEditing(p); setForm({ title: p.title, description: p.description ?? '', price: String(p.price), category_id: p.category_id ?? '', featured: p.featured }); setShowForm(true) }
+  const openAdd = () => { setEditing(null); setForm({ title: '', description: '', price: '', category_id: '', featured: false }); setImageFiles([]); setShowForm(true) }
+  const openEdit = (p: any) => { setEditing(p); setForm({ title: p.title, description: p.description ?? '', price: String(p.price), category_id: p.category_id ?? '', featured: p.featured }); setImageFiles([]); setShowForm(true) }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
+    setUploading(true)
     const data = { title: form.title, description: form.description, price: parseFloat(form.price), category_id: form.category_id || null, featured: form.featured }
+
+    let productId = editing?.id
     if (editing) {
       await supabase.from('products').update(data).eq('id', editing.id)
     } else {
-      await supabase.from('products').insert(data)
+      const { data: newProduct } = await supabase.from('products').insert(data).select().single()
+      productId = newProduct?.id
     }
+
+    // Upload images
+    for (let i = 0; i < imageFiles.length; i++) {
+      const file = imageFiles[i]
+      const ext = file.name.split('.').pop()
+      const path = `${productId}/${Date.now()}-${i}.${ext}`
+      const { data: uploaded } = await supabase.storage.from('products').upload(path, file, { upsert: true })
+      if (uploaded) {
+        const { data: { publicUrl } } = supabase.storage.from('products').getPublicUrl(path)
+        await supabase.from('product_images').insert({ product_id: productId, image_url: publicUrl, sort_order: i })
+      }
+    }
+
+    setUploading(false)
     setShowForm(false)
+    load()
+  }
+
+  const deleteImage = async (imageId: string, imageUrl: string) => {
+    await supabase.from('product_images').delete().eq('id', imageId)
+    const path = imageUrl.split('/products/')[1]
+    if (path) await supabase.storage.from('products').remove([path])
     load()
   }
 
@@ -59,11 +85,10 @@ export default function AdminProducts() {
         </button>
       </div>
 
-      {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-8 w-full max-w-lg">
-            <h2 className="text-xl font-bold text-white mb-6">{editing ? 'Edit Product' : 'Add Product'}</h2>
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-8 w-full max-w-xl my-8">
+            <h2 className="text-xl font-bold text-white mb-6">{editing ? 'Edit' : 'Add'} Product</h2>
             <form onSubmit={handleSave} className="space-y-4">
               <div>
                 <label className="block text-sm text-gray-400 mb-1">Title</label>
@@ -91,48 +116,99 @@ export default function AdminProducts() {
                 </div>
               </div>
               <label className="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" checked={form.featured} onChange={e => setForm(f => ({...f, featured: e.target.checked}))}
-                  className="w-4 h-4 accent-[#c9a84c]" />
-                <span className="text-sm text-gray-300">Featured product</span>
+                <input type="checkbox" checked={form.featured} onChange={e => setForm(f => ({...f, featured: e.target.checked}))} className="w-4 h-4 accent-[#c9a84c]" />
+                <span className="text-sm text-gray-300">Featured on homepage</span>
               </label>
+
+              {/* Image Upload */}
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">Product Images</label>
+                <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-[#333] rounded-lg cursor-pointer hover:border-[#c9a84c] transition-colors">
+                  <Upload size={18} className="text-[#c9a84c]" />
+                  <span className="text-sm text-gray-400">Click to upload images</span>
+                  <input type="file" accept="image/*" multiple className="hidden"
+                    onChange={e => setImageFiles(Array.from(e.target.files ?? []))} />
+                </label>
+                {imageFiles.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {imageFiles.map((f, i) => (
+                      <div key={i} className="relative">
+                        <img src={URL.createObjectURL(f)} alt="" className="w-16 h-16 object-cover rounded-lg border border-[#333]" />
+                        <button type="button" onClick={() => setImageFiles(prev => prev.filter((_, j) => j !== i))}
+                          className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                          <X size={10} className="text-white" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {/* Existing images when editing */}
+                {editing?.product_images?.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-xs text-gray-500 mb-2">Existing images:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {editing.product_images.map((img: any) => (
+                        <div key={img.id} className="relative">
+                          <img src={img.image_url} alt="" className="w-16 h-16 object-cover rounded-lg border border-[#333]" />
+                          <button type="button" onClick={() => deleteImage(img.id, img.image_url)}
+                            className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                            <X size={10} className="text-white" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="flex gap-3 pt-2">
-                <button type="submit" className="flex-1 py-2.5 bg-[#c9a84c] text-black font-bold rounded-lg hover:bg-[#e2c06a] transition-all text-sm">Save</button>
-                <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-2.5 border border-[#333] text-gray-400 rounded-lg hover:border-[#555] transition-all text-sm">Cancel</button>
+                <button type="submit" disabled={uploading}
+                  className="flex-1 py-2.5 bg-[#c9a84c] text-black font-bold rounded-lg hover:bg-[#e2c06a] transition-all text-sm disabled:opacity-50">
+                  {uploading ? 'Uploading...' : 'Save Product'}
+                </button>
+                <button type="button" onClick={() => setShowForm(false)}
+                  className="flex-1 py-2.5 border border-[#333] text-gray-400 rounded-lg hover:border-[#555] transition-all text-sm">
+                  Cancel
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Table */}
       <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[#2a2a2a]">
-              {['Product', 'Category', 'Price', 'Featured', 'Actions'].map(h => (
+              {['Image', 'Product', 'Category', 'Price', 'Featured', 'Actions'].map(h => (
                 <th key={h} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-600">Loading...</td></tr>
+              <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-600">Loading...</td></tr>
             ) : products.length === 0 ? (
-              <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-600">No products yet</td></tr>
-            ) : products.map((p: any) => (
+              <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-600">No products yet — add your first one!</td></tr>
+            ) : products.map(p => (
               <tr key={p.id} className="border-b border-[#222] hover:bg-[#1f1f1f] transition-colors">
+                <td className="px-6 py-4">
+                  {p.product_images?.[0]?.image_url ? (
+                    <img src={p.product_images[0].image_url} alt="" className="w-12 h-12 object-cover rounded-lg border border-[#333]" />
+                  ) : (
+                    <div className="w-12 h-12 bg-[#222] rounded-lg border border-[#333] flex items-center justify-center">
+                      <span className="text-[#444] text-xs">—</span>
+                    </div>
+                  )}
+                </td>
                 <td className="px-6 py-4 font-medium text-white">{p.title}</td>
                 <td className="px-6 py-4 text-gray-400">{p.categories?.name ?? '—'}</td>
                 <td className="px-6 py-4 text-[#c9a84c] font-bold">${p.price}</td>
                 <td className="px-6 py-4">{p.featured && <Star size={16} className="text-[#c9a84c] fill-[#c9a84c]" />}</td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
-                    <button onClick={() => openEdit(p)} className="p-1.5 hover:bg-[#2a2a2a] rounded-lg transition-colors text-gray-400 hover:text-white">
-                      <Pencil size={15} />
-                    </button>
-                    <button onClick={() => handleDelete(p.id)} className="p-1.5 hover:bg-red-500/10 rounded-lg transition-colors text-gray-400 hover:text-red-400">
-                      <Trash2 size={15} />
-                    </button>
+                    <button onClick={() => openEdit(p)} className="p-1.5 hover:bg-[#2a2a2a] rounded-lg transition-colors text-gray-400 hover:text-white"><Pencil size={15} /></button>
+                    <button onClick={() => handleDelete(p.id)} className="p-1.5 hover:bg-red-500/10 rounded-lg transition-colors text-gray-400 hover:text-red-400"><Trash2 size={15} /></button>
                   </div>
                 </td>
               </tr>
