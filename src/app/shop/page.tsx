@@ -1,6 +1,7 @@
 'use client'
 import { allProducts } from '@/lib/products'
 
+
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import ProductCard from '@/components/ProductCard'
