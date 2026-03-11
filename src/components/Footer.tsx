@@ -38,8 +38,16 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-[#222] pt-8 text-center text-gray-600 text-sm">
-          © {new Date().getFullYear()} Jersey World B. All rights reserved.
+        <div className="border-t border-[#222] pt-8 flex items-center justify-between">
+          <p className="text-gray-600 text-sm">
+            © {new Date().getFullYear()} Jersey World B. All rights reserved.
+          </p>
+          <Link
+            href="/admin"
+            className="text-[#333] text-xs hover:text-[#555] transition-colors"
+          >
+            Admin
+          </Link>
         </div>
       </div>
     </footer>
