@@ -3,13 +3,8 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import ProductCard from '@/components/ProductCard'
+import { featuredProducts } from '@/lib/products'
 
-export const featuredProducts = [
-  { id: '1', title: 'AC Milan Home Jersey', price: '$45.00', category: 'soccer', team: 'AC Milan' },
-  { id: '2', title: 'Barcelona FC Jersey', price: '$40.00', category: 'soccer', team: 'Barcelona' },
-  { id: '3', title: 'Chicago Bulls Jersey', price: '$60.00', category: 'basketball', team: 'Chicago Bulls' },
-  { id: '4', title: 'Bayern Munich Jersey', price: '$45.00', category: 'soccer', team: 'Bayern Munich' },
-]
 
 export default function Home() {
   return (
