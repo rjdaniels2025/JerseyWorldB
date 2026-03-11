@@ -1,9 +1,10 @@
 'use client'
+import { featuredProducts } from '@/lib/products'
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import ProductCard from '@/components/ProductCard'
-import { featuredProducts } from '@/lib/products'
+
 
 
 export default function Home() {
