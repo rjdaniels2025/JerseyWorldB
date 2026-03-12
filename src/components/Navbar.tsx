@@ -1,23 +1,22 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ShoppingCart, Menu, X } from 'lucide-react'
 
-export default function Navbar() {
+function NavbarInner() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const pathname = usePathname()
-
-  // Hide navbar on all admin pages
-  if (pathname?.startsWith('/admin')) return null
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  if (pathname?.startsWith('/admin')) return null
 
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
@@ -60,5 +59,13 @@ export default function Navbar() {
         </div>
       )}
     </nav>
+  )
+}
+
+export default function Navbar() {
+  return (
+    <Suspense fallback={null}>
+      <NavbarInner />
+    </Suspense>
   )
 }
