@@ -11,11 +11,11 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'Jersey World B — Premium Jerseys',
+  title: 'Jersey World B Premium Jerseys',
   description: 'Premium soccer, basketball, football and hockey jerseys for fans who live the game. Quality, style, and passion in every stitch.',
   metadataBase: new URL('https://jerseyworldb.vercel.app'),
   openGraph: {
-    title: 'Jersey World B — Premium Jerseys',
+    title: 'Jersey World B Premium Jerseys',
     description: 'Premium soccer, basketball, football and hockey jerseys for fans who live the game.',
     url: 'https://jerseyworldb.vercel.app',
     siteName: 'Jersey World B',
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Jersey World B — Premium Jerseys',
+        alt: 'Jersey World B Premium Jerseys',
       },
     ],
     locale: 'en_CA',
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Jersey World B — Premium Jerseys',
+    title: 'Jersey World B Premium Jerseys',
     description: 'Premium soccer, basketball, football and hockey jerseys for fans who live the game.',
     images: ['/og-image.png'],
   },

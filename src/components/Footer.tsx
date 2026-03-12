@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-14 pb-14 border-b border-[#2e2d2d]">
           <div className="max-w-xs">
             <Link href="/" className="inline-block mb-4 hover:opacity-80 transition-opacity">
-              <Image src="/logo.png" alt="Jersey World B" width={140} height={40} className="h-9 w-auto object-contain" />
+              <Image src="/logo.png" alt="Jersey World B" width={140} height={40} className="h-12 w-auto object-contain" />
             </Link>
             <p className="text-[#5c5755] text-sm leading-relaxed">Premium jerseys for fans who live the game. Quality, style, and passion in every stitch.</p>
           </div>

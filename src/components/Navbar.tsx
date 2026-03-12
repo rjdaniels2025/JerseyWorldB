@@ -35,7 +35,7 @@ function NavbarInner() {
     }`}>
       <div className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between h-[68px]">
         <Link href="/" className="hover:opacity-80 transition-opacity">
-          <Image src="/logo.png" alt="Jersey World B" width={160} height={44} className="h-10 w-auto object-contain" priority />
+          <Image src="/logo.png" alt="Jersey World B" width={160} height={44} className="h-14 w-auto object-contain" priority />
         </Link>
 
         <div className="hidden md:flex items-center gap-1">

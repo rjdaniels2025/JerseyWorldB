@@ -84,7 +84,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── Pricing Section — vertical image ── */}
+      {/* ── Pricing Section vertical image ── */}
       <section className="py-24 md:py-32 border-y border-[#2e2d2d]">
         <div className="max-w-7xl mx-auto px-5 sm:px-8">
           <div className="text-center mb-14">
@@ -130,7 +130,7 @@ export default async function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
               { n: '01', title: 'Premium Quality', desc: 'Every jersey crafted from high-quality materials built to last the season.' },
-              { n: '02', title: 'Massive Selection', desc: 'Soccer, basketball, football, baseball, hockey — we carry it all.' },
+              { n: '02', title: 'Massive Selection', desc: 'Soccer, basketball, football, baseball, hockey we carry it all.' },
               { n: '03', title: 'Custom Options', desc: 'Add your name and number to make it uniquely yours.' },
             ].map((item) => (
               <div key={item.n} className="group relative p-8 bg-[#1f1e1e] border border-[#2e2d2d] rounded-2xl hover:border-[#c9a84c44] transition-all duration-300">
