@@ -59,7 +59,7 @@ export default function AdminGallery() {
   }
 
   const handleDelete = async (id: string, imageUrl: string) => {
-    if (!confirm('Delete this photo? This will also remove it from storage.')) return
+    if (!confirm('Delete this photo? ')) return
     await deleteStorageFile(imageUrl)
     await supabase.from('fan_gallery').delete().eq('id', id)
     load()
@@ -70,7 +70,7 @@ export default function AdminGallery() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-black text-white">Fan Gallery</h1>
-          <p className="text-gray-500 text-sm mt-1">{photos.length} photos, deleting removes from storage too</p>
+          <p className="text-gray-500 text-sm mt-1">{photos.length} photos</p>
         </div>
         <button onClick={() => setShowForm(true)}
           className="flex items-center gap-2 px-5 py-3 bg-[#c9a84c] text-black font-bold rounded-lg hover:bg-[#e2c06a] transition-all text-sm">

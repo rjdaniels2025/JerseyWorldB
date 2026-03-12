@@ -58,7 +58,7 @@ export default function AdminCustomDesigns() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-black text-white">Custom Designs</h1>
-          <p className="text-gray-500 text-sm mt-1">{designs.length} designs. Deleting removes from storage too.</p>
+          <p className="text-gray-500 text-sm mt-1">{designs.length} designs. </p>
         </div>
         <button onClick={() => setShowForm(true)}
           className="flex items-center gap-2 px-4 py-2.5 bg-[#c9a84c] text-black font-bold rounded-lg hover:bg-[#e2c06a] transition-all text-sm">
