@@ -18,21 +18,22 @@ export default async function Home() {
     <div>
 
       {/* ── Hero ── */}
-      <section className="relative flex flex-col overflow-hidden" style={{ minHeight: '100svh' }}>
-
-        {/* Background image — contains the full image, no cropping */}
+      <section className="relative w-full">
         {hero?.image_url ? (
           <>
+            {/* Image drives the height — no fixed height, no gaps */}
             <img
               src={hero.image_url}
               alt={hero.title ?? 'Hero'}
-              className="absolute inset-0 w-full h-full"
-              style={{ objectFit: 'contain', objectPosition: 'center top', backgroundColor: '#161515' }}
+              className="w-full block"
+              style={{ display: 'block' }}
             />
+            {/* Subtle gradient at bottom for text legibility */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#161515] via-transparent to-transparent" />
           </>
         ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[#161515]">
+          <div className="w-full flex flex-col items-center justify-center gap-4 bg-[#1a1919]"
+            style={{ minHeight: '100svh' }}>
             <svg className="w-16 h-16 text-[#2e2d2d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
@@ -40,16 +41,16 @@ export default async function Home() {
           </div>
         )}
 
-        {/* Hero text overlay — only if there's text to show */}
+        {/* Optional text overlay — only shown if banner has title/button */}
         {hero && (hero.title || hero.button_text) && (
-          <div className="relative z-10 flex flex-col items-center justify-end flex-1 text-center px-5 pb-16 pt-24">
+          <div className="absolute bottom-0 left-0 right-0 z-10 text-center px-5 pb-10 pt-20 bg-gradient-to-t from-[#161515] to-transparent">
             {hero.title && (
-              <h1 className="text-4xl sm:text-6xl md:text-8xl font-black text-[#f0ede8] mb-3 tracking-tight leading-none w-full">
+              <h1 className="text-3xl sm:text-6xl md:text-8xl font-black text-[#f0ede8] mb-3 tracking-tight leading-none">
                 {hero.title}
               </h1>
             )}
             {hero.subtitle && (
-              <p className="text-base sm:text-lg text-[#a09890] mb-8 font-light">{hero.subtitle}</p>
+              <p className="text-base text-[#a09890] mb-6 font-light">{hero.subtitle}</p>
             )}
             {hero.button_text && hero.button_link && (
               <Link href={hero.button_link}>
@@ -60,10 +61,6 @@ export default async function Home() {
             )}
           </div>
         )}
-
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
-          <div className="w-px h-10 bg-gradient-to-b from-[#c9a84c60] to-transparent" />
-        </div>
       </section>
 
       {/* ── Featured ── */}
@@ -109,10 +106,8 @@ export default async function Home() {
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#f0ede8] tracking-tight">Pricing</h2>
           </div>
           {promoItem?.image_url ? (
-            <div className="flex justify-center px-4 sm:px-0">
-              <div
-                className="relative rounded-2xl overflow-hidden border border-[#2e2d2d] shadow-[0_8px_60px_#00000060] w-full sm:w-auto"
-                style={{ maxWidth: '420px', aspectRatio: '9/16' }}>
+            <div className="flex justify-center">
+              <div className="relative rounded-2xl overflow-hidden border border-[#2e2d2d] shadow-[0_8px_60px_#00000060] w-full" style={{ maxWidth: '420px', aspectRatio: '9/16' }}>
                 <img src={promoItem.image_url} alt={promoItem.title ?? 'Pricing'} className="w-full h-full object-cover" />
                 {(promoItem.title || promoItem.discount_percentage) && (
                   <div className="absolute inset-0 bg-gradient-to-t from-[#111111cc] via-transparent to-transparent flex items-end p-6">
@@ -125,10 +120,8 @@ export default async function Home() {
               </div>
             </div>
           ) : (
-            <div className="flex justify-center px-4 sm:px-0">
-              <div
-                className="rounded-2xl bg-[#1f1e1e] border border-[#2e2d2d] flex flex-col items-center justify-center gap-4 w-full"
-                style={{ maxWidth: '420px', aspectRatio: '9/16' }}>
+            <div className="flex justify-center">
+              <div className="rounded-2xl bg-[#1f1e1e] border border-[#2e2d2d] flex flex-col items-center justify-center gap-4 w-full" style={{ maxWidth: '420px', aspectRatio: '9/16' }}>
                 <p className="text-[10px] tracking-[0.3em] uppercase text-[#2e2d2d]">Add Pricing Image in Admin</p>
               </div>
             </div>
