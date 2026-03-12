@@ -30,7 +30,7 @@ export default async function AdminDashboard() {
   }
 
   return (
-    <div className="p-8 pt-16">
+    <div className="p-4 sm:p-8">
       <div className="mb-8">
         <h1 className="text-2xl font-black text-white">Dashboard</h1>
         <p className="text-gray-500 text-sm mt-1">Welcome back. Here's what's happening.</p>

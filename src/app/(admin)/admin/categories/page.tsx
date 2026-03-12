@@ -40,7 +40,7 @@ export default function AdminCategories() {
   }
 
   return (
-    <div className="p-8 pt-16">
+    <div className="p-4 sm:p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-black text-white">Categories</h1>
@@ -75,7 +75,7 @@ export default function AdminCategories() {
         </div>
       )}
 
-      <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden">
+      <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[#2a2a2a]">
