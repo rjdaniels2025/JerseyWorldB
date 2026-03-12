@@ -83,7 +83,7 @@ export default function ProductPage() {
               className="relative aspect-square rounded-2xl overflow-hidden border border-[#2e2d2d] bg-[#1a1a1a] cursor-zoom-in group mb-3"
               onClick={() => selectedImage && setLightbox(selectedImage)}>
               {selectedImage ? (
-                <img src={selectedImage} alt={product.title} className="w-full h-full object-cover" />
+                <img src={selectedImage} alt={product.title} className="w-full h-full object-contain" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[#333]">No image</div>
               )}
@@ -101,7 +101,7 @@ export default function ProductPage() {
                     className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${
                       selectedImage === img.image_url ? 'border-[#c9a84c]' : 'border-[#2e2d2d] hover:border-[#444]'
                     }`}>
-                    <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                    <img src={img.image_url} alt="" className="w-full h-full object-contain" />
                   </button>
                 ))}
               </div>

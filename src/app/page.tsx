@@ -133,7 +133,7 @@ export default async function Home() {
       <section className="py-16 md:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-8">
           <div className="text-center mb-10 md:mb-14">
-            <p className="text-[10px] font-semibold tracking-[0.3em] uppercase text-[#a09890] mb-2">The Difference</p>
+            <p className="text-[10px] font-semibold tracking-[0.3em] uppercase text-[#c9a84c] mb-2">The Difference</p>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#f0ede8] tracking-tight">Why Jersey World B</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -143,7 +143,7 @@ export default async function Home() {
               { n: '03', title: 'Custom Options', desc: 'Add your name and number to make it uniquely yours.' },
             ].map((item) => (
               <div key={item.n} className="p-6 sm:p-8 bg-[#1f1e1e] border border-[#2e2d2d] rounded-2xl hover:border-[#c9a84c44] transition-all duration-300">
-                <p className="text-4xl font-black text-[#2e2d2d] mb-4">{item.n}</p>
+                <p className="text-4xl font-black text-[#c9a84c] mb-4">{item.n}</p>
                 <h3 className="text-base font-bold text-[#f0ede8] mb-2">{item.title}</h3>
                 <p className="text-sm text-[#5c5755] leading-relaxed">{item.desc}</p>
               </div>
