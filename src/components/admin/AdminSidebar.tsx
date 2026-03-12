@@ -9,7 +9,7 @@ const links = [
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/categories', label: 'Categories', icon: Tag },
   { href: '/admin/banners', label: 'Banners', icon: Image },
-  { href: '/admin/promotions', label: 'Promotions', icon: Megaphone },
+  { href: '/admin/promotions', label: 'Pricing', icon: Megaphone },
   { href: '/admin/gallery', label: 'Fan Gallery', icon: Camera },
   { href: '/admin/leads', label: 'Leads', icon: Users },
 ]
