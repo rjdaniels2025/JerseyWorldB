@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Package, Tag, Image, Megaphone, Users, MessageSquare, Store, Paintbrush } from 'lucide-react'
+import { LayoutDashboard, Package, Tag, Image, Megaphone, Users, MessageSquare, Store, Paintbrush, Settings } from 'lucide-react'
 
 const links = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -13,6 +13,7 @@ const links = [
   { href: '/admin/gallery', label: 'Fan Gallery', icon: Users },
   { href: '/admin/custom-designs', label: 'Custom Designs', icon: Paintbrush },
   { href: '/admin/leads', label: 'Leads', icon: MessageSquare },
+  { href: '/admin/settings', label: 'Settings', icon: Settings },
 ]
 
 export default function AdminSidebar() {
