@@ -103,7 +103,7 @@ export default function AdminBanners() {
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
           <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-8 w-full max-w-lg">
             <h2 className="text-xl font-bold text-white mb-2">{editing ? 'Edit' : 'Add'} Banner</h2>
-            <p className="text-xs text-gray-500 mb-6">All fields are optional — upload just an image if you prefer.</p>
+            <p className="text-xs text-gray-500 mb-6">All fields are optional, upload just an image if you prefer.</p>
             <form onSubmit={handleSave} className="space-y-4">
               <div>
                 <label className="block text-sm text-gray-400 mb-2">Hero Image <span className="text-gray-600">(optional)</span></label>
@@ -168,8 +168,8 @@ export default function AdminBanners() {
                     ? <img src={b.image_url} alt="" className="w-20 h-12 object-cover rounded-lg border border-[#333]" />
                     : <div className="w-20 h-12 bg-[#222] rounded-lg border border-[#333] flex items-center justify-center"><span className="text-[#444] text-xs">No img</span></div>}
                 </td>
-                <td className="px-6 py-4 font-medium text-white">{b.title ?? <span className="text-[#444]">—</span>}</td>
-                <td className="px-6 py-4 text-gray-400">{b.button_text ?? <span className="text-[#444]">—</span>}</td>
+                <td className="px-6 py-4 font-medium text-white">{b.title ?? <span className="text-[#444]">.</span>}</td>
+                <td className="px-6 py-4 text-gray-400">{b.button_text ?? <span className="text-[#444]">.</span>}</td>
                 <td className="px-6 py-4">
                   <button onClick={() => toggleActive(b.id, b.active)} className="flex items-center gap-2 text-sm">
                     {b.active

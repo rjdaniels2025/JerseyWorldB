@@ -21,7 +21,7 @@ export default async function Home() {
       <section className="relative w-full">
         {hero?.image_url ? (
           <>
-            {/* Image drives the height — no fixed height, no gaps */}
+            {/* Image drives the height, no fixed height, no gaps */}
             <img
               src={hero.image_url}
               alt={hero.title ?? 'Hero'}
@@ -41,7 +41,7 @@ export default async function Home() {
           </div>
         )}
 
-        {/* Optional text overlay — only shown if banner has title/button */}
+        {/* Optional text overlay, only shown if banner has title/button */}
         {hero && (hero.title || hero.button_text) && (
           <div className="absolute bottom-0 left-0 right-0 z-10 text-center px-5 pb-10 pt-20 bg-gradient-to-t from-[#161515] to-transparent">
             {hero.title && (
@@ -139,7 +139,7 @@ export default async function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               { n: '01', title: 'Premium Quality', desc: 'Every jersey crafted from high-quality materials built to last the season.' },
-              { n: '02', title: 'Massive Selection', desc: 'Soccer, basketball, football, baseball, hockey — we carry it all.' },
+              { n: '02', title: 'Massive Selection', desc: 'Soccer, basketball, football, baseball, hockey, we carry it all.' },
               { n: '03', title: 'Custom Options', desc: 'Add your name and number to make it uniquely yours.' },
             ].map((item) => (
               <div key={item.n} className="p-6 sm:p-8 bg-[#1f1e1e] border border-[#2e2d2d] rounded-2xl hover:border-[#c9a84c44] transition-all duration-300">

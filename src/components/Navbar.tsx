@@ -79,7 +79,7 @@ function NavbarInner() {
         </div>
       </nav>
 
-      {/* Mobile menu — full screen overlay */}
+      {/* Mobile menu, full screen overlay */}
       {open && (
         <div className="fixed inset-0 z-40 bg-[#161515]/98 backdrop-blur-xl flex flex-col pt-20 px-5 pb-8 md:hidden">
           <nav className="flex flex-col gap-2 flex-1">

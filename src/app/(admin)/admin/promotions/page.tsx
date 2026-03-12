@@ -88,7 +88,7 @@ export default function AdminPricing() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-black text-white">Pricing</h1>
-          <p className="text-gray-500 text-sm mt-1">Controls the pricing section on the homepage — best with vertical (9:16) images</p>
+          <p className="text-gray-500 text-sm mt-1">Controls the pricing section on the homepage, best with vertical (9:16) images</p>
         </div>
         <button onClick={openAdd}
           className="flex items-center gap-2 px-5 py-3 bg-[#c9a84c] text-black font-bold rounded-lg hover:bg-[#e2c06a] transition-all text-sm">
@@ -106,7 +106,7 @@ export default function AdminPricing() {
               {/* Image upload with vertical preview */}
               <div>
                 <label className="block text-sm text-gray-400 mb-2">
-                  Image <span className="text-gray-600">(optional — vertical 9:16 recommended)</span>
+                  Image <span className="text-gray-600">(optional, vertical 9:16 recommended)</span>
                 </label>
                 <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-[#333] rounded-lg cursor-pointer hover:border-[#c9a84c] transition-colors">
                   <Upload size={18} className="text-[#c9a84c]" />
@@ -164,7 +164,7 @@ export default function AdminPricing() {
 
       {/* Grid of vertical image previews */}
       {items.length === 0 ? (
-        <div className="text-center py-20 text-gray-600">No pricing images yet — add your first one!</div>
+        <div className="text-center py-20 text-gray-600">No pricing images yet, add your first one!</div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {items.map(item => (

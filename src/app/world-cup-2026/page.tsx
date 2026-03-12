@@ -34,11 +34,11 @@ export default async function WorldCup2026() {
             </div>
             <h1 className="text-4xl md:text-6xl font-black text-white mb-4">2026 World Cup</h1>
             <p className="text-gray-400 text-lg max-w-2xl">
-              Represent your nation. Shop our full collection of international and national team jerseys — perfect for the biggest tournament on Earth.
+              Represent your nation. Shop our full collection of international and national team jerseys, perfect for the biggest tournament on Earth.
             </p>
             <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-[#c9a84c]/10 border border-[#c9a84c]/30 rounded-lg">
               <span className="w-2 h-2 rounded-full bg-[#c9a84c] animate-pulse" />
-              <span className="text-[#c9a84c] text-sm font-semibold">Temporary Collection — Available Now</span>
+              <span className="text-[#c9a84c] text-sm font-semibold">Temporary Collection, Available Now</span>
             </div>
           </div>
         </div>

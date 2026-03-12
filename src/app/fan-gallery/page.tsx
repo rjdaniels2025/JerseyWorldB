@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import { Instagram } from 'lucide-react'
 
 const captions = [
-  'More than a jersey — it\'s a statement.',
+  'More than a jersey, it\'s a statement.',
   'Represent your club. Represent the game.',
   'Built for fans of every beautiful game.',
   'Every jersey tells a story.',
@@ -55,7 +55,7 @@ export default function FanGallery() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <p className="text-gray-600 text-lg">No photos yet — check back soon!</p>
+            <p className="text-gray-600 text-lg">No photos yet, check back soon!</p>
           </div>
         ) : (
           <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">

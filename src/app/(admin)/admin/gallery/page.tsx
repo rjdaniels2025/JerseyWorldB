@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Plus, Trash2, ToggleLeft, ToggleRight, Upload } from 'lucide-react'
 
 const captions = [
-  "More than a jersey — it's a statement.",
+  "More than a jersey, it's a statement.",
   'Represent your club. Represent the game.',
   'Built for fans of every beautiful game.',
   'Every jersey tells a story.',
@@ -70,7 +70,7 @@ export default function AdminGallery() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-black text-white">Fan Gallery</h1>
-          <p className="text-gray-500 text-sm mt-1">{photos.length} photos — deleting removes from storage too</p>
+          <p className="text-gray-500 text-sm mt-1">{photos.length} photos, deleting removes from storage too</p>
         </div>
         <button onClick={() => setShowForm(true)}
           className="flex items-center gap-2 px-5 py-3 bg-[#c9a84c] text-black font-bold rounded-lg hover:bg-[#e2c06a] transition-all text-sm">
@@ -115,7 +115,7 @@ export default function AdminGallery() {
       )}
 
       {photos.length === 0 ? (
-        <div className="text-center py-20 text-gray-600">No photos yet — add your first one!</div>
+        <div className="text-center py-20 text-gray-600">No photos yet, add your first one!</div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {photos.map(photo => (
