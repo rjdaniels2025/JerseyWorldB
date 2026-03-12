@@ -14,7 +14,6 @@ export default async function CustomDesignsPage() {
     <div className="min-h-screen pt-24 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-8">
 
-        {/* Header */}
         <div className="text-center mb-10">
           <p className="text-[10px] font-semibold tracking-[0.3em] uppercase text-[#c9a84c] mb-3">Made For You</p>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#f0ede8] tracking-tight mb-4">
@@ -25,7 +24,6 @@ export default async function CustomDesignsPage() {
           </p>
         </div>
 
-        {/* CTA Button */}
         <div className="flex justify-center mb-14">
           
             href="https://instagram.com/JerseyWorldB"
@@ -39,7 +37,6 @@ export default async function CustomDesignsPage() {
           </a>
         </div>
 
-        {/* Gallery grid */}
         {!designs || designs.length === 0 ? (
           <div className="text-center py-24 text-[#3a3838]">
             <p className="text-5xl mb-4">✏️</p>
