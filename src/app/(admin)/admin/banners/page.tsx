@@ -22,7 +22,7 @@ export default function AdminBanners() {
 
   const openAdd = () => {
     setEditing(null)
-    setForm({ title: '', subtitle: '', button_text: '', button_link: '', active: false })
+    setForm({ title: '', subtitle: '', button_text: '', button_link: '', active: true })
     setImageFile(null)
     setShowForm(true)
   }
