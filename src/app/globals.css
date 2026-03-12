@@ -3,17 +3,17 @@
 @tailwind utilities;
 
 :root {
-  --bg-base:       #181818;
-  --bg-surface:    #1f1e1e;
-  --bg-raised:     #252424;
-  --bg-overlay:    #2c2b2b;
-  --border-subtle: #2e2d2d;
-  --border-mid:    #3a3838;
-  --gold:          #c9a84c;
-  --gold-light:    #dfc06e;
-  --text-primary:  #f0ede8;
-  --text-secondary:#a09890;
-  --text-muted:    #5c5755;
+  --bg-base:        #181818;
+  --bg-surface:     #1f1e1e;
+  --bg-raised:      #252424;
+  --bg-overlay:     #2c2b2b;
+  --border-subtle:  #2e2d2d;
+  --border-mid:     #3a3838;
+  --gold:           #c9a84c;
+  --gold-light:     #dfc06e;
+  --text-primary:   #f0ede8;
+  --text-secondary: #a09890;
+  --text-muted:     #5c5755;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -24,17 +24,71 @@ body {
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-image: radial-gradient(ellipse 80% 50% at 50% -10%, #c9a84c08 0%, transparent 70%);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
 }
 
+/* ── Smokey background layers ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  background:
+    /* Gold smoke bloom — top center */
+    radial-gradient(ellipse 70% 50% at 50% -5%,  #c9a84c12 0%, transparent 65%),
+    /* Cool smoke drift — left */
+    radial-gradient(ellipse 55% 60% at -10% 30%, #ffffff06 0%, transparent 60%),
+    /* Warm smoke pocket — right */
+    radial-gradient(ellipse 50% 55% at 110% 50%, #c9a84c07 0%, transparent 55%),
+    /* Deep shadow base — bottom */
+    radial-gradient(ellipse 80% 40% at 50% 110%, #00000080 0%, transparent 60%),
+    /* Mid smoke — center float */
+    radial-gradient(ellipse 60% 40% at 30% 60%,  #ffffff03 0%, transparent 50%),
+    /* Base charcoal */
+    linear-gradient(160deg, #1c1b1b 0%, #181818 40%, #141313 100%);
+}
+
+/* Noise grain texture over smoke */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.55;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+  background-size: 300px 300px;
+  mix-blend-mode: overlay;
+}
+
+/* Make sure page content sits above smoke layers */
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg-base); }
 ::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 ::selection { background: var(--gold); color: #111; }
 
+/* ── Animations ── */
+@keyframes smokeFloat {
+  0%   { transform: translateY(0px) translateX(0px) scale(1); opacity: 0.6; }
+  33%  { transform: translateY(-18px) translateX(8px) scale(1.03); opacity: 0.8; }
+  66%  { transform: translateY(-8px) translateX(-6px) scale(0.98); opacity: 0.65; }
+  100% { transform: translateY(0px) translateX(0px) scale(1); opacity: 0.6; }
+}
+
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
 .animate-fade-up { animation: fadeUp 0.6s ease forwards; }
