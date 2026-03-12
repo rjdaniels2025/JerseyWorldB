@@ -4,18 +4,6 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Plus, Trash2, ToggleLeft, ToggleRight, Upload } from 'lucide-react'
 
-const captions = [
-  "More than a jersey, it's a statement.",
-  'Represent your club. Represent the game.',
-  'Built for fans of every beautiful game.',
-  'Every jersey tells a story.',
-  'From the pitch to the streets.',
-  'Sports culture, everywhere.',
-  'Your team. Your colors. Your style.',
-  'Game day ready.',
-  'Where legends are worn.',
-]
-
 export default function AdminGallery() {
   const [photos, setPhotos] = useState<any[]>([])
   const [showForm, setShowForm] = useState(false)
@@ -35,17 +23,17 @@ export default function AdminGallery() {
     try {
       const path = url.split('/object/public/gallery/')[1]
       if (path) await supabase.storage.from('gallery').remove([decodeURIComponent(path)])
-    } catch (e) { console.error('Storage cleanup error:', e) }
+    } catch (e) { console.error(e) }
   }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!imageFile) return
     setUploading(true)
-    const path = `fan-${Date.now()}.${imageFile.name.split('.').pop()}`
+    const path = \`fan-\${Date.now()}.\${imageFile.name.split('.').pop()}\`
     await supabase.storage.from('gallery').upload(path, imageFile, { upsert: true })
     const { data: { publicUrl } } = supabase.storage.from('gallery').getPublicUrl(path)
-    await supabase.from('fan_gallery').insert({ image_url: publicUrl, caption, active: true })
+    await supabase.from('fan_gallery').insert({ image_url: publicUrl, caption: caption || null, active: true })
     setUploading(false)
     setShowForm(false)
     setImageFile(null)
@@ -59,7 +47,7 @@ export default function AdminGallery() {
   }
 
   const handleDelete = async (id: string, imageUrl: string) => {
-    if (!confirm('Delete this photo? ')) return
+    if (!confirm('Delete this photo?')) return
     await deleteStorageFile(imageUrl)
     await supabase.from('fan_gallery').delete().eq('id', id)
     load()
@@ -73,37 +61,38 @@ export default function AdminGallery() {
           <p className="text-gray-500 text-sm mt-1">{photos.length} photos</p>
         </div>
         <button onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-5 py-3 bg-[#c9a84c] text-black font-bold rounded-lg hover:bg-[#e2c06a] transition-all text-sm">
-          <Plus size={16} /> Add Photo
+          className="flex items-center gap-2 px-4 py-2.5 bg-[#c9a84c] text-black font-bold rounded-lg hover:bg-[#e2c06a] transition-all text-sm">
+          <Plus size={15} /> Add Photo
         </button>
       </div>
 
       {showForm && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-8 w-full max-w-lg">
+          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-6 w-full max-w-lg">
             <h2 className="text-xl font-bold text-white mb-6">Add Fan Photo</h2>
             <form onSubmit={handleSave} className="space-y-4">
               <div>
                 <label className="block text-sm text-gray-400 mb-2">Photo</label>
                 <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-[#333] rounded-lg cursor-pointer hover:border-[#c9a84c] transition-colors">
-                  <Upload size={18} className="text-[#c9a84c]" />
+                  <Upload size={16} className="text-[#c9a84c]" />
                   <span className="text-sm text-gray-400">{imageFile ? imageFile.name : 'Click to upload photo'}</span>
-                  <input type="file" accept="image/*" className="hidden"
-                    onChange={e => setImageFile(e.target.files?.[0] ?? null)} required />
+                  <input type="file" accept="image/*" className="hidden" required
+                    onChange={e => setImageFile(e.target.files?.[0] ?? null)} />
                 </label>
                 {imageFile && <img src={URL.createObjectURL(imageFile)} alt="" className="mt-2 h-32 w-full object-cover rounded-lg border border-[#333]" />}
               </div>
               <div>
                 <label className="block text-sm text-gray-400 mb-1">Caption <span className="text-gray-600">(optional)</span></label>
-                <select value={caption} onChange={e => setCaption(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[#111] border border-[#333] rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a84c]">
-                  <option value="">Auto (rotates through captions)</option>
-                  {captions.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <input
+                  value={caption}
+                  onChange={e => setCaption(e.target.value)}
+                  placeholder="e.g. Rocking the new Inter Miami away kit!"
+                  className="w-full px-4 py-2.5 bg-[#111] border border-[#333] rounded-lg text-white text-sm placeholder-[#444] focus:outline-none focus:ring-2 focus:ring-[#c9a84c]"
+                />
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="submit" disabled={uploading || !imageFile}
-                  className="flex-1 py-2.5 bg-[#c9a84c] text-black font-bold rounded-lg hover:bg-[#e2c06a] transition-all text-sm disabled:opacity-50">
+                  className="flex-1 py-2.5 bg-[#c9a84c] text-black font-bold rounded-lg text-sm disabled:opacity-50">
                   {uploading ? 'Uploading...' : 'Upload Photo'}
                 </button>
                 <button type="button" onClick={() => setShowForm(false)}
@@ -115,14 +104,14 @@ export default function AdminGallery() {
       )}
 
       {photos.length === 0 ? (
-        <div className="text-center py-20 text-gray-600">No photos yet, add your first one!</div>
+        <div className="text-center py-20 text-gray-600">No photos yet.</div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {photos.map(photo => (
             <div key={photo.id} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden">
               <img src={photo.image_url} alt="" className="w-full aspect-square object-cover" />
               <div className="p-3">
-                <p className="text-xs text-gray-500 italic mb-3 line-clamp-2">{photo.caption || 'Auto caption'}</p>
+                {photo.caption && <p className="text-xs text-[#c9a84c] mb-2 line-clamp-2">{photo.caption}</p>}
                 <div className="flex items-center justify-between">
                   <button onClick={() => toggleActive(photo.id, photo.active)} className="flex items-center gap-1 text-xs">
                     {photo.active
