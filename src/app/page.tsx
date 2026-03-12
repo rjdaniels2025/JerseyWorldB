@@ -18,30 +18,33 @@ export default async function Home() {
     <div>
 
       {/* ── Hero ── */}
-      <section className="relative flex items-end justify-center overflow-hidden"
-        style={{ minHeight: '100svh' }}>
+      <section className="relative flex flex-col overflow-hidden" style={{ minHeight: '100svh' }}>
+
+        {/* Background image — contains the full image, no cropping */}
         {hero?.image_url ? (
           <>
             <img
               src={hero.image_url}
               alt={hero.title ?? 'Hero'}
-              className="absolute inset-0 w-full h-full object-cover object-center"
+              className="absolute inset-0 w-full h-full"
+              style={{ objectFit: 'contain', objectPosition: 'center top', backgroundColor: '#161515' }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#161515] via-[#16151540] to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#161515] via-transparent to-transparent" />
           </>
         ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[#161515]">
             <svg className="w-16 h-16 text-[#2e2d2d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <p className="text-[10px] tracking-[0.3em] uppercase text-[#2e2d2d]">Hero Image</p>
+            <p className="text-[10px] tracking-[0.3em] uppercase text-[#2e2d2d]">Add a banner in Admin</p>
           </div>
         )}
 
+        {/* Hero text overlay — only if there's text to show */}
         {hero && (hero.title || hero.button_text) && (
-          <div className="relative z-10 w-full text-center px-5 pb-16 pt-32">
+          <div className="relative z-10 flex flex-col items-center justify-end flex-1 text-center px-5 pb-16 pt-24">
             {hero.title && (
-              <h1 className="text-4xl sm:text-6xl md:text-8xl font-black text-[#f0ede8] mb-3 tracking-tight leading-none">
+              <h1 className="text-4xl sm:text-6xl md:text-8xl font-black text-[#f0ede8] mb-3 tracking-tight leading-none w-full">
                 {hero.title}
               </h1>
             )}
@@ -50,7 +53,7 @@ export default async function Home() {
             )}
             {hero.button_text && hero.button_link && (
               <Link href={hero.button_link}>
-                <button className="px-7 py-3.5 sm:px-8 sm:py-4 bg-[#c9a84c] text-[#111] font-bold rounded-xl hover:bg-[#dfc06e] transition-all duration-300 uppercase tracking-[0.1em] text-sm">
+                <button className="px-7 py-3.5 bg-[#c9a84c] text-[#111] font-bold rounded-xl hover:bg-[#dfc06e] transition-all duration-300 uppercase tracking-[0.1em] text-sm">
                   {hero.button_text}
                 </button>
               </Link>
@@ -90,7 +93,7 @@ export default async function Home() {
           )}
           <div className="text-center mt-10 md:hidden">
             <Link href="/shop">
-              <button className="w-full max-w-xs px-8 py-3.5 bg-[#c9a84c] text-[#111] font-bold rounded-xl text-sm uppercase tracking-[0.1em]">
+              <button className="w-full max-w-xs px-8 py-4 bg-[#c9a84c] text-[#111] font-bold rounded-xl text-sm uppercase tracking-[0.1em]">
                 View All Jerseys
               </button>
             </Link>
@@ -106,15 +109,11 @@ export default async function Home() {
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#f0ede8] tracking-tight">Pricing</h2>
           </div>
           {promoItem?.image_url ? (
-            <div className="flex justify-center">
+            <div className="flex justify-center px-4 sm:px-0">
               <div
-                className="relative rounded-2xl overflow-hidden border border-[#2e2d2d] shadow-[0_8px_60px_#00000060] w-full"
+                className="relative rounded-2xl overflow-hidden border border-[#2e2d2d] shadow-[0_8px_60px_#00000060] w-full sm:w-auto"
                 style={{ maxWidth: '420px', aspectRatio: '9/16' }}>
-                <img
-                  src={promoItem.image_url}
-                  alt={promoItem.title ?? 'Pricing'}
-                  className="w-full h-full object-cover"
-                />
+                <img src={promoItem.image_url} alt={promoItem.title ?? 'Pricing'} className="w-full h-full object-cover" />
                 {(promoItem.title || promoItem.discount_percentage) && (
                   <div className="absolute inset-0 bg-gradient-to-t from-[#111111cc] via-transparent to-transparent flex items-end p-6">
                     <div>
@@ -126,14 +125,11 @@ export default async function Home() {
               </div>
             </div>
           ) : (
-            <div className="flex justify-center">
+            <div className="flex justify-center px-4 sm:px-0">
               <div
                 className="rounded-2xl bg-[#1f1e1e] border border-[#2e2d2d] flex flex-col items-center justify-center gap-4 w-full"
                 style={{ maxWidth: '420px', aspectRatio: '9/16' }}>
-                <svg className="w-12 h-12 text-[#2e2d2d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <p className="text-[10px] tracking-[0.3em] uppercase text-[#2e2d2d]">Pricing Image</p>
+                <p className="text-[10px] tracking-[0.3em] uppercase text-[#2e2d2d]">Add Pricing Image in Admin</p>
               </div>
             </div>
           )}
@@ -143,19 +139,19 @@ export default async function Home() {
       {/* ── Why Us ── */}
       <section className="py-16 md:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-8">
-          <div className="text-center mb-12 md:mb-16">
+          <div className="text-center mb-10 md:mb-14">
             <p className="text-[10px] font-semibold tracking-[0.3em] uppercase text-[#c9a84c] mb-2">The Difference</p>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#f0ede8] tracking-tight">Why Jersey World B</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               { n: '01', title: 'Premium Quality', desc: 'Every jersey crafted from high-quality materials built to last the season.' },
               { n: '02', title: 'Massive Selection', desc: 'Soccer, basketball, football, baseball, hockey — we carry it all.' },
               { n: '03', title: 'Custom Options', desc: 'Add your name and number to make it uniquely yours.' },
             ].map((item) => (
               <div key={item.n} className="p-6 sm:p-8 bg-[#1f1e1e] border border-[#2e2d2d] rounded-2xl hover:border-[#c9a84c44] transition-all duration-300">
-                <p className="text-4xl sm:text-5xl font-black text-[#2e2d2d] mb-4 sm:mb-6">{item.n}</p>
-                <h3 className="text-base sm:text-lg font-bold text-[#f0ede8] mb-2 sm:mb-3">{item.title}</h3>
+                <p className="text-4xl font-black text-[#2e2d2d] mb-4">{item.n}</p>
+                <h3 className="text-base font-bold text-[#f0ede8] mb-2">{item.title}</h3>
                 <p className="text-sm text-[#5c5755] leading-relaxed">{item.desc}</p>
               </div>
             ))}
