@@ -6,7 +6,6 @@
   --bg-base:        #181818;
   --bg-surface:     #1f1e1e;
   --bg-raised:      #252424;
-  --bg-overlay:     #2c2b2b;
   --border-subtle:  #2e2d2d;
   --border-mid:     #3a3838;
   --gold:           #c9a84c;
@@ -20,75 +19,48 @@
 html { scroll-behavior: smooth; }
 
 body {
-  background-color: var(--bg-base);
+  background-color: #181818;
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  min-height: 100vh;
-  position: relative;
   overflow-x: hidden;
-}
-
-/* ── Smokey background layers ── */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-
-  background:
-    /* Gold smoke bloom — top center */
-    radial-gradient(ellipse 70% 50% at 50% -5%,  #c9a84c12 0%, transparent 65%),
-    /* Cool smoke drift — left */
-    radial-gradient(ellipse 55% 60% at -10% 30%, #ffffff06 0%, transparent 60%),
-    /* Warm smoke pocket — right */
-    radial-gradient(ellipse 50% 55% at 110% 50%, #c9a84c07 0%, transparent 55%),
-    /* Deep shadow base — bottom */
-    radial-gradient(ellipse 80% 40% at 50% 110%, #00000080 0%, transparent 60%),
-    /* Mid smoke — center float */
-    radial-gradient(ellipse 60% 40% at 30% 60%,  #ffffff03 0%, transparent 50%),
-    /* Base charcoal */
-    linear-gradient(160deg, #1c1b1b 0%, #181818 40%, #141313 100%);
-}
-
-/* Noise grain texture over smoke */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.55;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
-  background-size: 300px 300px;
-  mix-blend-mode: overlay;
-}
-
-/* Make sure page content sits above smoke layers */
-body > * {
-  position: relative;
-  z-index: 1;
 }
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--bg-base); }
-::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: var(--gold); }
-::selection { background: var(--gold); color: #111; }
+::-webkit-scrollbar-track { background: #181818; }
+::-webkit-scrollbar-thumb { background: #3a3838; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #c9a84c; }
+::selection { background: #c9a84c; color: #111; }
 
-/* ── Animations ── */
-@keyframes smokeFloat {
-  0%   { transform: translateY(0px) translateX(0px) scale(1); opacity: 0.6; }
-  33%  { transform: translateY(-18px) translateX(8px) scale(1.03); opacity: 0.8; }
-  66%  { transform: translateY(-8px) translateX(-6px) scale(0.98); opacity: 0.65; }
-  100% { transform: translateY(0px) translateX(0px) scale(1); opacity: 0.6; }
+/* ── Smoke drift animation ── */
+@keyframes smokeDrift1 {
+  0%   { transform: translate(0px, 0px)   scale(1);    opacity: 0.5; }
+  25%  { transform: translate(30px, -40px) scale(1.05); opacity: 0.7; }
+  50%  { transform: translate(-20px,-70px) scale(1.1);  opacity: 0.4; }
+  75%  { transform: translate(10px, -40px) scale(1.03); opacity: 0.6; }
+  100% { transform: translate(0px, 0px)   scale(1);    opacity: 0.5; }
+}
+@keyframes smokeDrift2 {
+  0%   { transform: translate(0px, 0px)    scale(1);    opacity: 0.4; }
+  30%  { transform: translate(-40px, 30px) scale(1.08); opacity: 0.6; }
+  60%  { transform: translate(25px,  50px) scale(0.95); opacity: 0.3; }
+  100% { transform: translate(0px, 0px)    scale(1);    opacity: 0.4; }
+}
+@keyframes smokeDrift3 {
+  0%   { transform: translate(0px, 0px)    scale(1);    opacity: 0.35; }
+  40%  { transform: translate(50px, -30px) scale(1.12); opacity: 0.55; }
+  80%  { transform: translate(-30px, 20px) scale(0.92); opacity: 0.25; }
+  100% { transform: translate(0px, 0px)    scale(1);    opacity: 0.35; }
+}
+@keyframes smokeDrift4 {
+  0%   { transform: translate(0px, 0px)    scale(1);   opacity: 0.3; }
+  50%  { transform: translate(-25px,-50px) scale(1.06);opacity: 0.5; }
+  100% { transform: translate(0px, 0px)    scale(1);   opacity: 0.3; }
 }
 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
 .animate-fade-up { animation: fadeUp 0.6s ease forwards; }
