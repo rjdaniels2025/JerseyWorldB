@@ -65,7 +65,7 @@ export default function ShopClient({ products, categories }: { products: any[], 
             {filtered.length === 0 ? (
               <div className="text-center py-20 text-gray-600">No products found</div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filtered.map((product, index) => (
                   <ProductCard key={product.id} id={product.id} title={product.title}
                     price={`$${product.price}`} image={product.product_images?.[0]?.image_url} index={index} />
