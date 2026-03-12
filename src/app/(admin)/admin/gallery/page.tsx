@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Plus, Trash2, ToggleLeft, ToggleRight, Upload } from 'lucide-react'
 
 const captions = [
-  'More than a jersey — it\'s a statement.',
+  "More than a jersey — it's a statement.",
   'Represent your club. Represent the game.',
   'Built for fans of every beautiful game.',
   'Every jersey tells a story.',
@@ -31,6 +31,13 @@ export default function AdminGallery() {
 
   useEffect(() => { load() }, [])
 
+  const deleteStorageFile = async (url: string) => {
+    try {
+      const path = url.split('/object/public/gallery/')[1]
+      if (path) await supabase.storage.from('gallery').remove([decodeURIComponent(path)])
+    } catch (e) { console.error('Storage cleanup error:', e) }
+  }
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!imageFile) return
@@ -52,10 +59,9 @@ export default function AdminGallery() {
   }
 
   const handleDelete = async (id: string, imageUrl: string) => {
-    if (!confirm('Delete this photo?')) return
+    if (!confirm('Delete this photo? This will also remove it from storage.')) return
+    await deleteStorageFile(imageUrl)
     await supabase.from('fan_gallery').delete().eq('id', id)
-    const path = imageUrl.split('/gallery/')[1]
-    if (path) await supabase.storage.from('gallery').remove([path])
     load()
   }
 
@@ -64,7 +70,7 @@ export default function AdminGallery() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-black text-white">Fan Gallery</h1>
-          <p className="text-gray-500 text-sm mt-1">{photos.length} photos</p>
+          <p className="text-gray-500 text-sm mt-1">{photos.length} photos — deleting removes from storage too</p>
         </div>
         <button onClick={() => setShowForm(true)}
           className="flex items-center gap-2 px-5 py-3 bg-[#c9a84c] text-black font-bold rounded-lg hover:bg-[#e2c06a] transition-all text-sm">
@@ -82,12 +88,13 @@ export default function AdminGallery() {
                 <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-[#333] rounded-lg cursor-pointer hover:border-[#c9a84c] transition-colors">
                   <Upload size={18} className="text-[#c9a84c]" />
                   <span className="text-sm text-gray-400">{imageFile ? imageFile.name : 'Click to upload photo'}</span>
-                  <input type="file" accept="image/*" className="hidden" onChange={e => setImageFile(e.target.files?.[0] ?? null)} required />
+                  <input type="file" accept="image/*" className="hidden"
+                    onChange={e => setImageFile(e.target.files?.[0] ?? null)} required />
                 </label>
                 {imageFile && <img src={URL.createObjectURL(imageFile)} alt="" className="mt-2 h-32 w-full object-cover rounded-lg border border-[#333]" />}
               </div>
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Caption (optional)</label>
+                <label className="block text-sm text-gray-400 mb-1">Caption <span className="text-gray-600">(optional)</span></label>
                 <select value={caption} onChange={e => setCaption(e.target.value)}
                   className="w-full px-4 py-2.5 bg-[#111] border border-[#333] rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a84c]">
                   <option value="">Auto (rotates through captions)</option>
