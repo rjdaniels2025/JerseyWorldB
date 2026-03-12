@@ -24,7 +24,7 @@ export default function ProductCard({ id, title, price, image, index = 0 }: Prop
         <div className="relative overflow-hidden rounded-2xl bg-[#1f1e1e] border border-[#2e2d2d] mb-4 aspect-square shadow-[0_2px_20px_#00000040] group-hover:border-[#c9a84c44] group-hover:shadow-[0_8px_40px_#00000060] transition-all duration-500">
           {image ? (
             <img src={image} alt={title}
-              className="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-out" />
+              className="w-full h-full object-contain group-hover:scale-[1.06] transition-transform duration-700 ease-out" />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center gap-3">
               <svg className="w-12 h-12 text-[#3a3838]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
