@@ -73,7 +73,7 @@ export default function FanGallery() {
                     className="w-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 </div>
                 <div className="p-3">
-                  <p className="text-xs text-gray-500 italic leading-relaxed">
+                  <p className="text-base font-semibold text-[#c9a84c] leading-relaxed">
                     {photo.caption || captions[index % captions.length]}
                   </p>
                 </div>
