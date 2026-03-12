@@ -10,6 +10,7 @@ const links = [
   ['/', 'Home'],
   ['/shop', 'Shop'],
   ['/world-cup-2026', '🏆 World Cup'],
+  ['/custom-designs', 'Custom Designs'],
   ['/fan-gallery', 'Fan Gallery'],
   ['/contact', 'Contact'],
 ]
@@ -59,7 +60,7 @@ function NavbarInner() {
               const active = pathname === href
               return (
                 <Link key={href} href={href}
-                  className={`px-4 py-2 rounded-lg text-[13px] font-medium tracking-wide transition-all duration-200 ${
+                  className={`px-3 py-2 rounded-lg text-[13px] font-medium tracking-wide transition-all duration-200 ${
                     active ? 'text-[#c9a84c] bg-[#c9a84c12]' : 'text-[#a09890] hover:text-[#f0ede8] hover:bg-[#ffffff08]'
                   }`}>
                   {label}
@@ -84,7 +85,6 @@ function NavbarInner() {
         </div>
       </nav>
 
-      {/* Mobile full-screen menu */}
       {open && (
         <div className="fixed inset-0 z-40 bg-[#161515]/98 backdrop-blur-xl flex flex-col pt-20 px-5 pb-8 md:hidden">
           <nav className="flex flex-col gap-2 flex-1">
@@ -104,13 +104,11 @@ function NavbarInner() {
           <div className="border-t border-[#2e2d2d] pt-6 space-y-2">
             <a href="https://instagram.com/JerseyWorldB" target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-3 px-5 py-3 rounded-xl text-[#a09890] text-sm hover:text-[#c9a84c] transition-colors">
-              <InstagramIcon />
-              @JerseyWorldB
+              <InstagramIcon /> @JerseyWorldB
             </a>
             <a href="https://tiktok.com/@JerseyWorldB" target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-3 px-5 py-3 rounded-xl text-[#a09890] text-sm hover:text-[#c9a84c] transition-colors">
-              <TikTokIcon />
-              @JerseyWorldB
+              <TikTokIcon /> @JerseyWorldB
             </a>
           </div>
         </div>

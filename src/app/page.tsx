@@ -133,7 +133,7 @@ export default async function Home() {
       <section className="py-16 md:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-8">
           <div className="text-center mb-10 md:mb-14">
-            <p className="text-[10px] font-semibold tracking-[0.3em] uppercase text-[#c9a84c] mb-2">The Difference</p>
+            <p className="text-[10px] font-semibold tracking-[0.3em] uppercase text-[#a09890] mb-2">The Difference</p>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#f0ede8] tracking-tight">Why Jersey World B</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
