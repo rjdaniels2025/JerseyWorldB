@@ -80,7 +80,7 @@ export default function ProductPage() {
           {/* Images */}
           <div>
             <div
-              className="relative aspect-square rounded-2xl overflow-hidden border border-[#2e2d2d] bg-[#1a1a1a] cursor-zoom-in group mb-3"
+              className="relative aspect-square rounded-2xl overflow-hidden bg-[#1a1a1a] cursor-zoom-in group mb-3"
               onClick={() => selectedImage && setLightbox(selectedImage)}>
               {selectedImage ? (
                 <img src={selectedImage} alt={product.title} className="w-full h-full object-contain" />
