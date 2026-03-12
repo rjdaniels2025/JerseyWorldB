@@ -39,7 +39,7 @@ export default function FanGallery() {
         <div className="text-center mb-16">
           <p className="text-xs font-bold tracking-[0.3em] uppercase text-[#c9a84c] mb-3">Community</p>
           <h1 className="text-4xl md:text-6xl font-black text-white mb-6">Fan Gallery</h1>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+          <p className="text-[#c9a84c] text-lg max-w-2xl mx-auto">
             From match days to everyday style, our community shows how jerseys go beyond the pitch.
             Check out how members of the Jersey World B community rock their favorite kits.
           </p>
