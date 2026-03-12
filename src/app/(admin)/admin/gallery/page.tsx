@@ -21,8 +21,8 @@ export default function AdminGallery() {
 
   const deleteStorageFile = async (url: string) => {
     try {
-      const path = url.split('/object/public/gallery/')[1]
-      if (path) await supabase.storage.from('gallery').remove([decodeURIComponent(path)])
+      const parts = url.split('/object/public/gallery/')
+      if (parts[1]) await supabase.storage.from('gallery').remove([decodeURIComponent(parts[1])])
     } catch (e) { console.error(e) }
   }
 
@@ -30,10 +30,11 @@ export default function AdminGallery() {
     e.preventDefault()
     if (!imageFile) return
     setUploading(true)
-    const path = \`fan-\${Date.now()}.\${imageFile.name.split('.').pop()}\`
+    const ext = imageFile.name.split('.').pop()
+    const path = 'fan-' + Date.now() + '.' + ext
     await supabase.storage.from('gallery').upload(path, imageFile, { upsert: true })
-    const { data: { publicUrl } } = supabase.storage.from('gallery').getPublicUrl(path)
-    await supabase.from('fan_gallery').insert({ image_url: publicUrl, caption: caption || null, active: true })
+    const { data: urlData } = supabase.storage.from('gallery').getPublicUrl(path)
+    await supabase.from('fan_gallery').insert({ image_url: urlData.publicUrl, caption: caption || null, active: true })
     setUploading(false)
     setShowForm(false)
     setImageFile(null)
@@ -79,7 +80,9 @@ export default function AdminGallery() {
                   <input type="file" accept="image/*" className="hidden" required
                     onChange={e => setImageFile(e.target.files?.[0] ?? null)} />
                 </label>
-                {imageFile && <img src={URL.createObjectURL(imageFile)} alt="" className="mt-2 h-32 w-full object-cover rounded-lg border border-[#333]" />}
+                {imageFile && (
+                  <img src={URL.createObjectURL(imageFile)} alt="" className="mt-2 h-32 w-full object-cover rounded-lg border border-[#333]" />
+                )}
               </div>
               <div>
                 <label className="block text-sm text-gray-400 mb-1">Caption <span className="text-gray-600">(optional)</span></label>
@@ -111,7 +114,9 @@ export default function AdminGallery() {
             <div key={photo.id} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden">
               <img src={photo.image_url} alt="" className="w-full aspect-square object-cover" />
               <div className="p-3">
-                {photo.caption && <p className="text-xs text-[#c9a84c] mb-2 line-clamp-2">{photo.caption}</p>}
+                {photo.caption && (
+                  <p className="text-xs text-[#c9a84c] mb-2 line-clamp-2">{photo.caption}</p>
+                )}
                 <div className="flex items-center justify-between">
                   <button onClick={() => toggleActive(photo.id, photo.active)} className="flex items-center gap-1 text-xs">
                     {photo.active
