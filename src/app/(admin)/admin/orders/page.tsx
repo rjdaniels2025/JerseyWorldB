@@ -62,7 +62,7 @@ export default function AdminOrders() {
         <div className="text-center py-20 text-gray-600">No orders yet</div>
       ) : (
         <div className="space-y-3">
-          {orders.map(lead => (
+          {orders.map(order => (
             <div key={order.id} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-4 sm:p-5">
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="min-w-0">
