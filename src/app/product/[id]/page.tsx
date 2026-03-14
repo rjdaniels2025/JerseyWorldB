@@ -37,7 +37,7 @@ export default function ProductPage() {
       email: form.email,
       phone: form.phone || null,
       city: form.city || null,
-      size: form.size || null,
+      size: form.size,
       custom_name: form.custom_name || null,
       custom_number: form.custom_number || null,
       message: form.message || null,
@@ -147,7 +147,7 @@ export default function ProductPage() {
                 {product.sizes?.length > 0 && (
                   <select value={form.size} onChange={e => setForm(f => ({ ...f, size: e.target.value }))}
                     className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#2e2d2d] rounded-xl text-[#f0ede8] text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a84c]">
-                    <option value="">Select size</option>
+                    <option value="" disabled>Select a size *</option>
                     {product.sizes.map((s: string) => <option key={s} value={s}>{s}</option>)}
                   </select>
                 )}

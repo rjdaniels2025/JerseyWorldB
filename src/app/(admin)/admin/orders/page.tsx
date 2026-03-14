@@ -63,50 +63,50 @@ export default function AdminOrders() {
       ) : (
         <div className="space-y-3">
           {orders.map(lead => (
-            <div key={lead.id} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-4 sm:p-5">
+            <div key={order.id} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-4 sm:p-5">
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="min-w-0">
-                  <p className="font-bold text-white truncate">{lead.customer_name}</p>
-                  <p className="text-sm text-gray-500 truncate">{lead.email}</p>
-                  {lead.phone && <p className="text-sm text-gray-500">{lead.phone}</p>}
+                  <p className="font-bold text-white truncate">{order.customer_name}</p>
+                  <p className="text-sm text-gray-500 truncate">{order.email}</p>
+                  {order.phone && <p className="text-sm text-gray-500">{order.phone}</p>}
                 </div>
-                <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${statusColor(lead.status)}`}>
-                  {lead.status}
+                <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${statusColor(order.status)}`}>
+                  {order.status}
                 </span>
               </div>
 
-              {lead.products?.title && (
-                <p className="text-sm text-[#c9a84c] mb-2 truncate">📦 {lead.products.title}</p>
+              {order.products?.title && (
+                <p className="text-sm text-[#c9a84c] mb-2 truncate">📦 {order.products.title}</p>
               )}
 
               <div className="flex flex-wrap gap-2 text-xs text-gray-500 mb-3">
-                {lead.size && <span className="bg-[#222] px-2 py-1 rounded">Size: {lead.size}</span>}
-                {lead.custom_name && <span className="bg-[#222] px-2 py-1 rounded">Name: {lead.custom_name}</span>}
-                {lead.custom_number && <span className="bg-[#222] px-2 py-1 rounded">#{lead.custom_number}</span>}
-                {lead.city && <span className="bg-[#222] px-2 py-1 rounded">{lead.city}</span>}
+                {order.size && <span className="bg-[#222] px-2 py-1 rounded">Size: {order.size}</span>}
+                {order.custom_name && <span className="bg-[#222] px-2 py-1 rounded">Name: {order.custom_name}</span>}
+                {order.custom_number && <span className="bg-[#222] px-2 py-1 rounded">#{order.custom_number}</span>}
+                {order.city && <span className="bg-[#222] px-2 py-1 rounded">{order.city}</span>}
               </div>
 
-              {lead.message && (
-                <p className="text-sm text-gray-400 mb-3 bg-[#141414] rounded-lg p-3 italic">"{lead.message}"</p>
+              {order.message && (
+                <p className="text-sm text-gray-400 mb-3 bg-[#141414] rounded-lg p-3 italic">"{order.message}"</p>
               )}
 
               <div className="flex items-center justify-between gap-3">
                 <select
-                  value={lead.status}
-                  onChange={e => updateStatus(lead.id, e.target.value)}
+                  value={order.status}
+                  onChange={e => updateStatus(order.id, e.target.value)}
                   className="flex-1 px-3 py-2 bg-[#111] border border-[#333] rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a84c]">
                   <option value="new">New</option>
                   <option value="contacted">Contacted</option>
                   <option value="completed">Completed</option>
                 </select>
-                <button onClick={() => deleteLead(lead.id)}
+                <button onClick={() => deleteLead(order.id)}
                   className="px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors border border-[#2a2a2a]">
                   Delete
                 </button>
               </div>
 
               <p className="text-[10px] text-gray-700 mt-2">
-                {new Date(lead.created_at).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                {new Date(order.created_at).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
           ))}
