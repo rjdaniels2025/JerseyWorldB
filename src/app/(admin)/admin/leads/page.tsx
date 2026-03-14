@@ -41,8 +41,8 @@ export default function AdminLeads() {
     <div className="p-4 sm:p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-black text-white">Leads</h1>
-          <p className="text-gray-500 text-sm mt-1">{leads.length} {filter === 'all' ? 'total' : filter}</p>
+          <h1 className="text-2xl font-black text-white">Orders</h1>
+          <p className="text-gray-500 text-sm mt-1">{orders.length} {filter === 'all' ? 'total' : filter}</p>
         </div>
       </div>
 
@@ -58,7 +58,7 @@ export default function AdminLeads() {
         ))}
       </div>
 
-      {leads.length === 0 ? (
+      {orders.length === 0 ? (
         <div className="text-center py-20 text-gray-600">No leads yet</div>
       ) : (
         <div className="space-y-3">

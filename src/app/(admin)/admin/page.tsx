@@ -19,8 +19,8 @@ export default async function AdminDashboard() {
 
   const stats = [
     { label: 'Products', value: productCount ?? 0, href: '/admin/products', color: 'text-[#c9a84c]' },
-    { label: 'Total Leads', value: leadCount ?? 0, href: '/admin/leads', color: 'text-blue-400' },
-    { label: 'New Leads', value: newLeadCount ?? 0, href: '/admin/leads', color: 'text-green-400' },
+    { label: 'Total Leads', value: leadCount ?? 0, href: '/admin/orders', color: 'text-blue-400' },
+    { label: 'New Leads', value: newLeadCount ?? 0, href: '/admin/orders', color: 'text-green-400' },
   ]
 
   const statusColor = (s: string) => {
@@ -51,7 +51,7 @@ export default async function AdminDashboard() {
       {/* Recent leads as cards */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-white">Recent Leads</h2>
+          <h2 className="text-lg font-bold text-white">Recent Orders</h2>
           <Link href="/admin/leads" className="text-sm text-[#c9a84c] hover:underline">View all</Link>
         </div>
 

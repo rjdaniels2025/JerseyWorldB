@@ -41,7 +41,7 @@ export default function ProductPage() {
       custom_name: form.custom_name || null,
       custom_number: form.custom_number || null,
       message: form.message || null,
-      status: 'new',
+      status: 'New',
     })
     setSubmitting(false)
     setSubmitted(true)
