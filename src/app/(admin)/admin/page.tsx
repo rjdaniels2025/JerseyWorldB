@@ -52,7 +52,7 @@ export default async function AdminDashboard() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-white">Recent Orders</h2>
-          <Link href="/admin/leads" className="text-sm text-[#c9a84c] hover:underline">View all</Link>
+          <Link href="/admin/orders" className="text-sm text-[#c9a84c] hover:underline">View all</Link>
         </div>
 
         {!recentLeads || recentLeads.length === 0 ? (
