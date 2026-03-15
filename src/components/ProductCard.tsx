@@ -1,7 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { optimizeImage } from '@/lib/imageUrl'
 
 interface Props {
   id: string
@@ -20,24 +22,30 @@ export default function ProductCard({ id, title, price, image, index = 0 }: Prop
       transition={{ delay: index * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
       <Link href={`/product/${id}`} className="group block">
-        {/* Image */}
         <div className="relative overflow-hidden rounded-2xl bg-[#1f1e1e] border border-[#2e2d2d] mb-4 shadow-[0_2px_20px_#00000040] group-hover:border-[#c9a84c44] group-hover:shadow-[0_8px_40px_#00000060] transition-all duration-500">
           {image ? (
-            <img src={image} alt={title}
-              className="w-full object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-out" />
+            <div className="relative w-full" style={{ aspectRatio: '3/4' }}>
+              <Image
+                src={optimizeImage(image, 600)}
+                alt={title}
+                fill
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                className="object-contain group-hover:scale-[1.06] transition-transform duration-700 ease-out"
+                loading="lazy"
+                placeholder="blur"
+                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+              />
+            </div>
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center gap-3">
+            <div className="w-full flex flex-col items-center justify-center gap-3 py-16">
               <svg className="w-12 h-12 text-[#3a3838]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span className="text-[10px] tracking-[0.2em] uppercase text-[#3a3838]">No Image</span>
             </div>
           )}
-          {/* Gold shimmer line on hover */}
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a84c] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         </div>
-
-        {/* Info */}
         <div className="px-1">
           <p className="text-[#f0ede8] font-medium text-sm leading-snug mb-1.5 group-hover:text-white transition-colors line-clamp-2">{title}</p>
           <div className="flex items-center justify-between">

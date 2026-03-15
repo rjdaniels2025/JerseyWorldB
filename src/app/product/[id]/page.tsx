@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { X, ZoomIn } from 'lucide-react'
+import { optimizeImage } from '@/lib/imageUrl'
 
 export default function ProductPage() {
   const { id } = useParams()
@@ -83,7 +84,7 @@ export default function ProductPage() {
               className="relative rounded-2xl overflow-hidden cursor-zoom-in group mb-3"
               onClick={() => selectedImage && setLightbox(selectedImage)}>
               {selectedImage ? (
-                <img src={selectedImage} alt={product.title} className="w-full object-contain" />
+                <img src={optimizeImage(selectedImage, 1000)} alt={product.title} className="w-full object-contain" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[#333]">No image</div>
               )}
@@ -101,7 +102,7 @@ export default function ProductPage() {
                     className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${
                       selectedImage === img.image_url ? 'border-[#c9a84c]' : 'border-[#2e2d2d] hover:border-[#444]'
                     }`}>
-                    <img src={img.image_url} alt="" className="w-full h-full object-contain" />
+                    <img src={optimizeImage(img.image_url, 200)} alt="" className="w-full h-full object-contain" />
                   </button>
                 ))}
               </div>
