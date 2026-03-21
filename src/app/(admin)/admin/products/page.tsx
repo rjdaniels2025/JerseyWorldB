@@ -108,7 +108,7 @@ export default function AdminProducts() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-black text-white">Products</h1>
-          <p className="text-gray-500 text-sm mt-1">{products.length} total</p>
+          <p className="text-gray-500 text-sm mt-1">{filtered.length} of {products.length} total</p>
         </div>
         <div className="relative flex-1 max-w-sm">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#c9a84c] pointer-events-none" />
@@ -201,11 +201,11 @@ export default function AdminProducts() {
       )}
 
       {/* Product cards */}
-      {products.length === 0 ? (
+      {filtered.length === 0 ? (
         <div className="text-center py-20 text-gray-600">No products yet</div>
       ) : (
         <div className="space-y-3">
-          {products.map(p => (
+          {filtered.map(p => (
             <div key={p.id} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-4 flex gap-4 items-start">
               {/* Image */}
               <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-[#333] shrink-0 bg-[#222]">
