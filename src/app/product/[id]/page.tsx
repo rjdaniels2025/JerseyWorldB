@@ -36,7 +36,7 @@ export default function ProductPage() {
       product_id: id,
       customer_name: form.name,
       email: form.email,
-      phone: form.phone || null,
+      phone: form.phone,
       city: form.city || null,
       size: form.size,
       custom_name: form.custom_name || null,
@@ -132,7 +132,7 @@ export default function ProductPage() {
                 {[
                   { label: 'Your Name', key: 'name', required: true },
                   { label: 'Email', key: 'email', type: 'email', required: true },
-                  { label: 'Phone (optional)', key: 'phone' },
+                  { label: 'Phone Number', key: 'phone', required: true },
                   { label: 'City (optional)', key: 'city' },
                 ].map(({ label, key, type, required }) => (
                   <div key={key}>
