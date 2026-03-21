@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, Pencil, Trash2, Upload, X } from 'lucide-react'
+import { Plus, Pencil, Trash2, Upload, X, Search } from 'lucide-react'
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<any[]>([])
@@ -12,6 +12,7 @@ export default function AdminProducts() {
   const [form, setForm] = useState({ title: '', description: '', price: '', category_id: '', featured: false, sizes: '' })
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
+  const [search, setSearch] = useState('')
   const supabase = createClient()
 
   const load = async () => {
@@ -24,6 +25,12 @@ export default function AdminProducts() {
   }
 
   useEffect(() => { load() }, [])
+
+  const filtered = products.filter(p =>
+    !search.trim() ||
+    p.title?.toLowerCase().includes(search.toLowerCase()) ||
+    p.categories?.name?.toLowerCase().includes(search.toLowerCase())
+  )
 
   const openAdd = () => {
     setEditing(null)
@@ -102,6 +109,16 @@ export default function AdminProducts() {
         <div>
           <h1 className="text-2xl font-black text-white">Products</h1>
           <p className="text-gray-500 text-sm mt-1">{products.length} total</p>
+        </div>
+        <div className="relative flex-1 max-w-sm">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#c9a84c] pointer-events-none" />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search products..."
+            className="w-full pl-9 pr-4 py-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-white text-sm placeholder-[#444] focus:outline-none focus:ring-2 focus:ring-[#c9a84c]"
+          />
         </div>
         <button onClick={openAdd}
           className="flex items-center gap-2 px-4 py-2.5 bg-[#c9a84c] text-black font-bold rounded-lg hover:bg-[#e2c06a] transition-all text-sm">
