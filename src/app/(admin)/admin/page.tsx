@@ -13,7 +13,7 @@ export default async function AdminDashboard() {
   ] = await Promise.all([
     supabase.from('products').select('*', { count: 'exact', head: true }),
     supabase.from('leads').select('*', { count: 'exact', head: true }),
-    supabase.from('leads').select('*', { count: 'exact', head: true }).eq('status', 'new'),
+    supabase.from('leads').select('*', { count: 'exact', head: true }).ilike('status', 'new'),
     supabase.from('leads').select('*, products(title)').order('created_at', { ascending: false }).limit(8),
   ])
 

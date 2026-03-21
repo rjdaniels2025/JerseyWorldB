@@ -41,7 +41,7 @@ export default function AdminOrders() {
     load()
   }
 
-  const getCol = (status: string) => orders.filter(o => o.status === status)
+  const getCol = (status: string) => orders.filter(o => o.status?.toLowerCase() === status.toLowerCase())
 
   const fmt = (d: string) => new Date(d).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' })
 
