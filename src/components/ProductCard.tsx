@@ -21,7 +21,7 @@ export default function ProductCard({ id, title, price, image, index = 0 }: Prop
       <Link href={`/product/${id}`} className="group block">
         <div className="relative overflow-hidden rounded-2xl bg-[#1f1e1e] border border-[#2e2d2d] mb-4 shadow-[0_2px_20px_#00000040] group-hover:border-[#c9a84c44] group-hover:shadow-[0_8px_40px_#00000060] transition-all duration-500">
           {image ? (
-            <div className="w-full" style={{ aspectRatio: '3/4' }}>
+            <div className="w-full" style={{ aspectRatio: "auto" }}>
               <img
                 src={image}
                 alt={title}
