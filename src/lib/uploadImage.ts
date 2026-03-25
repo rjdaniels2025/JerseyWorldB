@@ -1,69 +1,67 @@
 const SUPABASE_FUNCTION_URL =
   'https://gvhtrsmnrfffhfjehsif.supabase.co/functions/v1/upload-image'
 
-// Fixed output dimensions per folder — images are resized client-side
-// before upload so every stored image is exactly these dimensions.
 const FOLDER_DIMENSIONS: Record<string, { width: number; height: number; quality: number }> = {
-  products:          { width: 800,  height: 1000, quality: 0.82 },
-  banners:           { width: 1920, height: 640,  quality: 0.85 },
-  promotions:        { width: 800,  height: 800,  quality: 0.80 },
-  'fan-gallery':     { width: 900,  height: 900,  quality: 0.75 },
-  'custom-designs':  { width: 800,  height: 800,  quality: 0.80 },
+  products:         { width: 800,  height: 1000, quality: 0.82 },
+  banners:          { width: 1920, height: 640,  quality: 0.85 },
+  promotions:       { width: 800,  height: 800,  quality: 0.80 },
+  'fan-gallery':    { width: 900,  height: 900,  quality: 0.75 },
+  'custom-designs': { width: 800,  height: 800,  quality: 0.80 },
 }
 
-/**
- * Resize a File to exact target dimensions using an HTML canvas.
- * The image is scaled to fit (contain) inside the target, centered,
- * and padded with white. Returns a new File (JPEG) at the target size.
- */
-async function resizeClientSide(
+function resizeClientSide(
   file: File,
   targetWidth: number,
   targetHeight: number,
   quality: number
 ): Promise<File> {
   return new Promise((resolve, reject) => {
-    const img = new Image()
-    const objectUrl = URL.createObjectURL(file)
+    const reader = new FileReader()
 
-    img.onload = () => {
-      URL.revokeObjectURL(objectUrl)
+    reader.onerror = () => reject(new Error('Failed to read image file'))
 
-      const canvas = document.createElement('canvas')
-      canvas.width = targetWidth
-      canvas.height = targetHeight
+    reader.onload = (readerEvent) => {
+      const dataUrl = readerEvent.target?.result as string
+      if (!dataUrl) { reject(new Error('Empty file read')); return }
 
-      const ctx = canvas.getContext('2d')!
+      const img = new Image()
 
-      // White background
-      ctx.fillStyle = '#ffffff'
-      ctx.fillRect(0, 0, targetWidth, targetHeight)
+      img.onerror = () => reject(new Error('Failed to decode image'))
 
-      // Scale to fit inside target preserving aspect ratio (contain)
-      const scale = Math.min(targetWidth / img.width, targetHeight / img.height)
-      const drawWidth  = Math.round(img.width  * scale)
-      const drawHeight = Math.round(img.height * scale)
-      const offsetX = Math.round((targetWidth  - drawWidth)  / 2)
-      const offsetY = Math.round((targetHeight - drawHeight) / 2)
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        canvas.width = targetWidth
+        canvas.height = targetHeight
 
-      ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight)
+        const ctx = canvas.getContext('2d')
+        if (!ctx) { reject(new Error('Canvas not supported')); return }
 
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) { reject(new Error('Canvas resize failed')); return }
-          resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }))
-        },
-        'image/jpeg',
-        quality
-      )
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(0, 0, targetWidth, targetHeight)
+
+        const scale = Math.min(targetWidth / img.naturalWidth, targetHeight / img.naturalHeight)
+        const drawWidth  = Math.round(img.naturalWidth  * scale)
+        const drawHeight = Math.round(img.naturalHeight * scale)
+        const offsetX    = Math.round((targetWidth  - drawWidth)  / 2)
+        const offsetY    = Math.round((targetHeight - drawHeight) / 2)
+
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight)
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) { reject(new Error('Canvas export failed')); return }
+            const outName = file.name.replace(/\.[^.]+$/, '') + '.jpg'
+            resolve(new File([blob], outName, { type: 'image/jpeg' }))
+          },
+          'image/jpeg',
+          quality
+        )
+      }
+
+      img.src = dataUrl
     }
 
-    img.onerror = () => {
-      URL.revokeObjectURL(objectUrl)
-      reject(new Error('Failed to load image for resizing'))
-    }
-
-    img.src = objectUrl
+    reader.readAsDataURL(file)
   })
 }
 
@@ -71,7 +69,6 @@ export async function uploadImageToR2(
   file: File,
   folder: string = 'products'
 ): Promise<string> {
-  // Resize client-side to exact fixed dimensions before uploading
   const dims = FOLDER_DIMENSIONS[folder] ?? FOLDER_DIMENSIONS['products']
   const resized = await resizeClientSide(file, dims.width, dims.height, dims.quality)
 
