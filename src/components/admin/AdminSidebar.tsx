@@ -3,11 +3,12 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Package, Tag, Image, Megaphone, Users, ShoppingBag, Store, Paintbrush, Settings, LogOut, ChevronDown } from 'lucide-react'
+import { LayoutDashboard, Package, Tag, Image, Megaphone, Users, ShoppingBag, Store, Paintbrush, Settings, LogOut, ChevronDown, Layers } from 'lucide-react'
 
 const links = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/products', label: 'Products', icon: Package },
+  { href: '/admin/bulk-upload', label: 'Bulk Upload', icon: Layers },
   { href: '/admin/categories', label: 'Categories', icon: Tag },
   { href: '/admin/banners', label: 'Banners', icon: Image },
   { href: '/admin/promotions', label: 'Pricing', icon: Megaphone },
