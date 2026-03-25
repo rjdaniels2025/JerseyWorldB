@@ -26,7 +26,7 @@ export default function ProductCard({ id, title, price, image, index = 0 }: Prop
           {image ? (
             <div className="relative w-full" style={{ aspectRatio: '3/4' }}>
               <Image
-                src={optimizeImage(image, 600)}
+                src={image}
                 alt={title}
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
