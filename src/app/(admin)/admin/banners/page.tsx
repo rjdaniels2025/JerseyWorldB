@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { uploadBannerImage } from '@/lib/uploadImage'
 import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Upload } from 'lucide-react'
 
 export default function AdminBanners() {
@@ -33,25 +34,13 @@ export default function AdminBanners() {
     setShowForm(true)
   }
 
-  const deleteStorageFile = async (url: string, bucket: string) => {
-    try {
-      const path = url.split(`/object/public/${bucket}/`)[1]
-      if (path) await supabase.storage.from(bucket).remove([decodeURIComponent(path)])
-    } catch (e) { console.error('Storage cleanup error:', e) }
-  }
-
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setUploading(true)
     let image_url = editing?.image_url ?? null
 
     if (imageFile) {
-      // Delete old image from storage if replacing
-      if (editing?.image_url) await deleteStorageFile(editing.image_url, 'banners')
-      const path = `hero-${Date.now()}.${imageFile.name.split('.').pop()}`
-      await supabase.storage.from('banners').upload(path, imageFile, { upsert: true })
-      const { data: { publicUrl } } = supabase.storage.from('banners').getPublicUrl(path)
-      image_url = publicUrl
+      image_url = await uploadBannerImage(imageFile)
     }
 
     const data = {
@@ -73,10 +62,8 @@ export default function AdminBanners() {
     load()
   }
 
-  const handleDelete = async (id: string, imageUrl: string | null) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Delete this banner?')) return
-    // Delete from storage first
-    if (imageUrl) await deleteStorageFile(imageUrl, 'banners')
     await supabase.from('banners').delete().eq('id', id)
     load()
   }
@@ -168,8 +155,8 @@ export default function AdminBanners() {
                     ? <img src={b.image_url} alt="" className="w-20 h-12 object-cover rounded-lg border border-[#333]" />
                     : <div className="w-20 h-12 bg-[#222] rounded-lg border border-[#333] flex items-center justify-center"><span className="text-[#444] text-xs">No img</span></div>}
                 </td>
-                <td className="px-6 py-4 font-medium text-white">{b.title ?? <span className="text-[#444]">.</span>}</td>
-                <td className="px-6 py-4 text-gray-400">{b.button_text ?? <span className="text-[#444]">.</span>}</td>
+                <td className="px-6 py-4 font-medium text-white">{b.title ?? <span className="text-[#444]">—</span>}</td>
+                <td className="px-6 py-4 text-gray-400">{b.button_text ?? <span className="text-[#444]">—</span>}</td>
                 <td className="px-6 py-4">
                   <button onClick={() => toggleActive(b.id, b.active)} className="flex items-center gap-2 text-sm">
                     {b.active
@@ -180,7 +167,7 @@ export default function AdminBanners() {
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
                     <button onClick={() => openEdit(b)} className="p-1.5 hover:bg-[#2a2a2a] rounded-lg text-gray-400 hover:text-white"><Pencil size={15} /></button>
-                    <button onClick={() => handleDelete(b.id, b.image_url)} className="p-1.5 hover:bg-red-500/10 rounded-lg text-gray-400 hover:text-red-400"><Trash2 size={15} /></button>
+                    <button onClick={() => handleDelete(b.id)} className="p-1.5 hover:bg-red-500/10 rounded-lg text-gray-400 hover:text-red-400"><Trash2 size={15} /></button>
                   </div>
                 </td>
               </tr>

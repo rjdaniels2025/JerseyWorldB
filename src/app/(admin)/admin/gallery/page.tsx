@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { uploadFanGalleryImage } from '@/lib/uploadImage'
 import { Plus, Trash2, ToggleLeft, ToggleRight, Upload } from 'lucide-react'
 
 export default function AdminGallery() {
@@ -19,22 +20,12 @@ export default function AdminGallery() {
 
   useEffect(() => { load() }, [])
 
-  const deleteStorageFile = async (url: string) => {
-    try {
-      const parts = url.split('/object/public/gallery/')
-      if (parts[1]) await supabase.storage.from('gallery').remove([decodeURIComponent(parts[1])])
-    } catch (e) { console.error(e) }
-  }
-
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!imageFile) return
     setUploading(true)
-    const ext = imageFile.name.split('.').pop()
-    const path = 'fan-' + Date.now() + '.' + ext
-    await supabase.storage.from('gallery').upload(path, imageFile, { upsert: true })
-    const { data: urlData } = supabase.storage.from('gallery').getPublicUrl(path)
-    await supabase.from('fan_gallery').insert({ image_url: urlData.publicUrl, caption: caption || null, active: true })
+    const imageUrl = await uploadFanGalleryImage(imageFile)
+    await supabase.from('fan_gallery').insert({ image_url: imageUrl, caption: caption || null, active: true })
     setUploading(false)
     setShowForm(false)
     setImageFile(null)
@@ -47,9 +38,8 @@ export default function AdminGallery() {
     load()
   }
 
-  const handleDelete = async (id: string, imageUrl: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Delete this photo?')) return
-    await deleteStorageFile(imageUrl)
     await supabase.from('fan_gallery').delete().eq('id', id)
     load()
   }
@@ -77,21 +67,15 @@ export default function AdminGallery() {
                 <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-[#333] rounded-lg cursor-pointer hover:border-[#c9a84c] transition-colors">
                   <Upload size={16} className="text-[#c9a84c]" />
                   <span className="text-sm text-gray-400">{imageFile ? imageFile.name : 'Click to upload photo'}</span>
-                  <input type="file" accept="image/*" className="hidden" required
-                    onChange={e => setImageFile(e.target.files?.[0] ?? null)} />
+                  <input type="file" accept="image/*" className="hidden" required onChange={e => setImageFile(e.target.files?.[0] ?? null)} />
                 </label>
-                {imageFile && (
-                  <img src={URL.createObjectURL(imageFile)} alt="" className="mt-2 h-32 w-full object-cover rounded-lg border border-[#333]" />
-                )}
+                {imageFile && <img src={URL.createObjectURL(imageFile)} alt="" className="mt-2 h-32 w-full object-cover rounded-lg border border-[#333]" />}
               </div>
               <div>
                 <label className="block text-sm text-gray-400 mb-1">Caption <span className="text-gray-600">(optional)</span></label>
-                <input
-                  value={caption}
-                  onChange={e => setCaption(e.target.value)}
+                <input value={caption} onChange={e => setCaption(e.target.value)}
                   placeholder="e.g. Rocking the new Inter Miami away kit!"
-                  className="w-full px-4 py-2.5 bg-[#111] border border-[#333] rounded-lg text-white text-sm placeholder-[#444] focus:outline-none focus:ring-2 focus:ring-[#c9a84c]"
-                />
+                  className="w-full px-4 py-2.5 bg-[#111] border border-[#333] rounded-lg text-white text-sm placeholder-[#444] focus:outline-none focus:ring-2 focus:ring-[#c9a84c]" />
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="submit" disabled={uploading || !imageFile}
@@ -114,17 +98,14 @@ export default function AdminGallery() {
             <div key={photo.id} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden">
               <img src={photo.image_url} alt="" className="w-full aspect-square object-cover" />
               <div className="p-3">
-                {photo.caption && (
-                  <p className="text-xs text-[#c9a84c] mb-2 line-clamp-2">{photo.caption}</p>
-                )}
+                {photo.caption && <p className="text-xs text-[#c9a84c] mb-2 line-clamp-2">{photo.caption}</p>}
                 <div className="flex items-center justify-between">
                   <button onClick={() => toggleActive(photo.id, photo.active)} className="flex items-center gap-1 text-xs">
                     {photo.active
                       ? <><ToggleRight size={16} className="text-[#c9a84c]" /><span className="text-[#c9a84c]">Visible</span></>
                       : <><ToggleLeft size={16} className="text-gray-600" /><span className="text-gray-600">Hidden</span></>}
                   </button>
-                  <button onClick={() => handleDelete(photo.id, photo.image_url)}
-                    className="p-1 hover:bg-red-500/10 rounded text-gray-500 hover:text-red-400 transition-colors">
+                  <button onClick={() => handleDelete(photo.id)} className="p-1 hover:bg-red-500/10 rounded text-gray-500 hover:text-red-400 transition-colors">
                     <Trash2 size={14} />
                   </button>
                 </div>

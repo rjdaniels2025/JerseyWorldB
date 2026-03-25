@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { uploadPromotionImage } from '@/lib/uploadImage'
 import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Upload } from 'lucide-react'
 
 export default function AdminPricing() {
@@ -33,24 +34,13 @@ export default function AdminPricing() {
     setShowForm(true)
   }
 
-  const deleteStorageFile = async (url: string) => {
-    try {
-      const path = url.split('/object/public/promotions/')[1]
-      if (path) await supabase.storage.from('promotions').remove([decodeURIComponent(path)])
-    } catch (e) { console.error(e) }
-  }
-
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setUploading(true)
     let image_url = editing?.image_url ?? null
 
     if (imageFile) {
-      if (editing?.image_url) await deleteStorageFile(editing.image_url)
-      const path = `pricing-${Date.now()}.${imageFile.name.split('.').pop()}`
-      await supabase.storage.from('promotions').upload(path, imageFile, { upsert: true })
-      const { data: { publicUrl } } = supabase.storage.from('promotions').getPublicUrl(path)
-      image_url = publicUrl
+      image_url = await uploadPromotionImage(imageFile)
     }
 
     const data = {
@@ -71,9 +61,8 @@ export default function AdminPricing() {
     load()
   }
 
-  const handleDelete = async (id: string, imageUrl: string | null) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Delete this pricing image?')) return
-    if (imageUrl) await deleteStorageFile(imageUrl)
     await supabase.from('promotions').delete().eq('id', id)
     load()
   }
@@ -100,34 +89,23 @@ export default function AdminPricing() {
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-8 w-full max-w-lg my-8">
             <h2 className="text-xl font-bold text-white mb-2">{editing ? 'Edit' : 'Add'} Pricing Image</h2>
-            <p className="text-xs text-gray-500 mb-6">Best with vertical 9:16 images (e.g. 1080×1920). All fields optional.</p>
+            <p className="text-xs text-gray-500 mb-6">Best with vertical 9:16 images. All fields optional.</p>
             <form onSubmit={handleSave} className="space-y-4">
-
-              {/* Image upload with vertical preview */}
               <div>
-                <label className="block text-sm text-gray-400 mb-2">
-                  Image <span className="text-gray-600">(optional, vertical 9:16 recommended)</span>
-                </label>
+                <label className="block text-sm text-gray-400 mb-2">Image <span className="text-gray-600">(optional)</span></label>
                 <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-[#333] rounded-lg cursor-pointer hover:border-[#c9a84c] transition-colors">
                   <Upload size={18} className="text-[#c9a84c]" />
                   <span className="text-sm text-gray-400">{imageFile ? imageFile.name : 'Click to upload image'}</span>
                   <input type="file" accept="image/*" className="hidden" onChange={e => setImageFile(e.target.files?.[0] ?? null)} />
                 </label>
-                {/* Vertical preview */}
                 {(imageFile || editing?.image_url) && (
                   <div className="mt-3 flex justify-center">
                     <div className="relative w-32 rounded-xl overflow-hidden border border-[#333]" style={{ aspectRatio: '9/16' }}>
-                      <img
-                        src={imageFile ? URL.createObjectURL(imageFile) : editing.image_url}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={imageFile ? URL.createObjectURL(imageFile) : editing.image_url} alt="" className="w-full h-full object-cover" />
                     </div>
-                    <p className="text-[10px] text-gray-600 mt-2 text-center">Preview</p>
                   </div>
                 )}
               </div>
-
               <div>
                 <label className="block text-sm text-gray-400 mb-1">Title <span className="text-gray-600">(optional)</span></label>
                 <input value={form.title} onChange={e => setForm(f => ({...f, title: e.target.value}))}
@@ -162,22 +140,16 @@ export default function AdminPricing() {
         </div>
       )}
 
-      {/* Grid of vertical image previews */}
       {items.length === 0 ? (
-        <div className="text-center py-20 text-gray-600">No pricing images yet, add your first one!</div>
+        <div className="text-center py-20 text-gray-600">No pricing images yet!</div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {items.map(item => (
-            <div key={item.id} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden overflow-x-auto">
-              {/* Vertical image preview */}
+            <div key={item.id} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden">
               <div className="relative w-full" style={{ aspectRatio: '9/16' }}>
-                {item.image_url ? (
-                  <img src={item.image_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-[#222]">
-                    <p className="text-[10px] text-[#444] tracking-widest uppercase">No image</p>
-                  </div>
-                )}
+                {item.image_url
+                  ? <img src={item.image_url} alt="" className="w-full h-full object-cover" />
+                  : <div className="w-full h-full flex items-center justify-center bg-[#222]"><p className="text-[10px] text-[#444]">No image</p></div>}
               </div>
               <div className="p-3 space-y-2">
                 {item.title && <p className="text-sm font-semibold text-white truncate">{item.title}</p>}
@@ -190,7 +162,7 @@ export default function AdminPricing() {
                   </button>
                   <div className="flex gap-1">
                     <button onClick={() => openEdit(item)} className="p-1.5 hover:bg-[#2a2a2a] rounded-lg text-gray-400 hover:text-white"><Pencil size={13} /></button>
-                    <button onClick={() => handleDelete(item.id, item.image_url)} className="p-1.5 hover:bg-red-500/10 rounded-lg text-gray-400 hover:text-red-400"><Trash2 size={13} /></button>
+                    <button onClick={() => handleDelete(item.id)} className="p-1.5 hover:bg-red-500/10 rounded-lg text-gray-400 hover:text-red-400"><Trash2 size={13} /></button>
                   </div>
                 </div>
               </div>

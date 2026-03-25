@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { uploadCustomDesign } from '@/lib/uploadImage'
 import { Plus, Trash2, ToggleLeft, ToggleRight, Upload } from 'lucide-react'
 
 export default function AdminCustomDesigns() {
@@ -19,21 +20,12 @@ export default function AdminCustomDesigns() {
 
   useEffect(() => { load() }, [])
 
-  const deleteStorageFile = async (url: string) => {
-    try {
-      const path = url.split('/object/public/custom-designs/')[1]
-      if (path) await supabase.storage.from('custom-designs').remove([decodeURIComponent(path)])
-    } catch (e) { console.error(e) }
-  }
-
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!imageFile) return
     setUploading(true)
-    const path = `design-${Date.now()}.${imageFile.name.split('.').pop()}`
-    await supabase.storage.from('custom-designs').upload(path, imageFile, { upsert: true })
-    const { data: { publicUrl } } = supabase.storage.from('custom-designs').getPublicUrl(path)
-    await supabase.from('custom_designs').insert({ image_url: publicUrl, caption: caption || null, active: true })
+    const imageUrl = await uploadCustomDesign(imageFile)
+    await supabase.from('custom_designs').insert({ image_url: imageUrl, caption: caption || null, active: true })
     setUploading(false)
     setShowForm(false)
     setImageFile(null)
@@ -46,9 +38,8 @@ export default function AdminCustomDesigns() {
     load()
   }
 
-  const handleDelete = async (id: string, imageUrl: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Delete this design?')) return
-    await deleteStorageFile(imageUrl)
     await supabase.from('custom_designs').delete().eq('id', id)
     load()
   }
@@ -58,7 +49,7 @@ export default function AdminCustomDesigns() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-black text-white">Custom Designs</h1>
-          <p className="text-gray-500 text-sm mt-1">{designs.length} designs. </p>
+          <p className="text-gray-500 text-sm mt-1">{designs.length} designs</p>
         </div>
         <button onClick={() => setShowForm(true)}
           className="flex items-center gap-2 px-4 py-2.5 bg-[#c9a84c] text-black font-bold rounded-lg hover:bg-[#e2c06a] transition-all text-sm">
@@ -76,8 +67,7 @@ export default function AdminCustomDesigns() {
                 <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-[#333] rounded-lg cursor-pointer hover:border-[#c9a84c] transition-colors">
                   <Upload size={16} className="text-[#c9a84c]" />
                   <span className="text-sm text-gray-400">{imageFile ? imageFile.name : 'Click to upload'}</span>
-                  <input type="file" accept="image/*" className="hidden" required
-                    onChange={e => setImageFile(e.target.files?.[0] ?? null)} />
+                  <input type="file" accept="image/*" className="hidden" required onChange={e => setImageFile(e.target.files?.[0] ?? null)} />
                 </label>
                 {imageFile && <img src={URL.createObjectURL(imageFile)} alt="" className="mt-2 h-32 w-full object-cover rounded-lg border border-[#333]" />}
               </div>
@@ -115,8 +105,7 @@ export default function AdminCustomDesigns() {
                       ? <><ToggleRight size={16} className="text-[#c9a84c]" /><span className="text-[#c9a84c]">Visible</span></>
                       : <><ToggleLeft size={16} className="text-gray-600" /><span className="text-gray-600">Hidden</span></>}
                   </button>
-                  <button onClick={() => handleDelete(d.id, d.image_url)}
-                    className="p-1 hover:bg-red-500/10 rounded text-gray-500 hover:text-red-400 transition-colors">
+                  <button onClick={() => handleDelete(d.id)} className="p-1 hover:bg-red-500/10 rounded text-gray-500 hover:text-red-400 transition-colors">
                     <Trash2 size={14} />
                   </button>
                 </div>

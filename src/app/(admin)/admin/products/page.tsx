@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { uploadProductImage } from '@/lib/uploadImage'
 import { Plus, Pencil, Trash2, Upload, X, Search } from 'lucide-react'
 
 export default function AdminProducts() {
@@ -49,13 +50,6 @@ export default function AdminProducts() {
     setShowForm(true)
   }
 
-  const deleteStorageFile = async (url: string) => {
-    try {
-      const path = url.split('/object/public/products/')[1]
-      if (path) await supabase.storage.from('products').remove([decodeURIComponent(path)])
-    } catch (e) { console.error(e) }
-  }
-
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setUploading(true)
@@ -74,11 +68,8 @@ export default function AdminProducts() {
     }
     if (imageFiles.length > 0 && productId) {
       for (let i = 0; i < imageFiles.length; i++) {
-        const file = imageFiles[i]
-        const path = `${productId}/${Date.now()}-${i}.${file.name.split('.').pop()}`
-        await supabase.storage.from('products').upload(path, file, { upsert: true })
-        const { data: { publicUrl } } = supabase.storage.from('products').getPublicUrl(path)
-        await supabase.from('product_images').insert({ product_id: productId, image_url: publicUrl, sort_order: i })
+        const imageUrl = await uploadProductImage(imageFiles[i])
+        await supabase.from('product_images').insert({ product_id: productId, image_url: imageUrl, sort_order: i })
       }
     }
     setUploading(false)
@@ -88,15 +79,12 @@ export default function AdminProducts() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this product?')) return
-    const { data: imgs } = await supabase.from('product_images').select('image_url').eq('product_id', id)
-    for (const img of imgs ?? []) await deleteStorageFile(img.image_url)
     await supabase.from('product_images').delete().eq('product_id', id)
     await supabase.from('products').delete().eq('id', id)
     load()
   }
 
   const deleteImage = async (imgUrl: string, productId: string) => {
-    await deleteStorageFile(imgUrl)
     const { data: imgs } = await supabase.from('product_images').select('*').eq('product_id', productId)
     const match = imgs?.find(i => i.image_url === imgUrl)
     if (match) await supabase.from('product_images').delete().eq('id', match.id)
@@ -110,15 +98,10 @@ export default function AdminProducts() {
           <h1 className="text-2xl font-black text-white">Products</h1>
           <p className="text-gray-500 text-sm mt-1">{filtered.length} of {products.length} total</p>
         </div>
-        <div className="relative flex-1 max-w-sm">
+        <div className="relative flex-1 max-w-sm mx-4">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#c9a84c] pointer-events-none" />
-          <input
-            type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search products..."
-            className="w-full pl-9 pr-4 py-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-white text-sm placeholder-[#444] focus:outline-none focus:ring-2 focus:ring-[#c9a84c]"
-          />
+          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search products..."
+            className="w-full pl-9 pr-4 py-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg text-white text-sm placeholder-[#444] focus:outline-none focus:ring-2 focus:ring-[#c9a84c]" />
         </div>
         <button onClick={openAdd}
           className="flex items-center gap-2 px-4 py-2.5 bg-[#c9a84c] text-black font-bold rounded-lg hover:bg-[#e2c06a] transition-all text-sm">
@@ -200,20 +183,17 @@ export default function AdminProducts() {
         </div>
       )}
 
-      {/* Product cards */}
       {filtered.length === 0 ? (
         <div className="text-center py-20 text-gray-600">No products yet</div>
       ) : (
         <div className="space-y-3">
           {filtered.map(p => (
             <div key={p.id} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-4 flex gap-4 items-start">
-              {/* Image */}
               <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-[#333] shrink-0 bg-[#222]">
                 {p.product_images?.[0]?.image_url
                   ? <img src={p.product_images[0].image_url} alt="" className="w-full h-full object-cover" />
                   : <div className="w-full h-full flex items-center justify-center"><span className="text-[#444] text-[10px]">No img</span></div>}
               </div>
-              {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <p className="font-bold text-white truncate">{p.title}</p>
@@ -225,12 +205,10 @@ export default function AdminProducts() {
                   {p.sizes?.length > 0 && <span className="text-[10px] text-gray-600">{p.sizes.join(', ')}</span>}
                 </div>
                 <div className="flex gap-2 mt-3">
-                  <button onClick={() => openEdit(p)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-[#222] text-gray-300 rounded-lg hover:text-white transition-colors">
+                  <button onClick={() => openEdit(p)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-[#222] text-gray-300 rounded-lg hover:text-white transition-colors">
                     <Pencil size={12} /> Edit
                   </button>
-                  <button onClick={() => handleDelete(p.id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-[#222] text-red-400 rounded-lg hover:bg-red-500/10 transition-colors">
+                  <button onClick={() => handleDelete(p.id)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-[#222] text-red-400 rounded-lg hover:bg-red-500/10 transition-colors">
                     <Trash2 size={12} /> Delete
                   </button>
                 </div>
