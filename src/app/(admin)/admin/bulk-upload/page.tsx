@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { uploadProductImage } from '@/lib/uploadImage'
 import { Plus, X, Upload, CheckCircle, AlertCircle, Layers } from 'lucide-react'
 
-const ALL_SIZES = ['S', 'M', 'L', 'XL', 'XXL']
+const ALL_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL', 'Youth S', 'Youth M', 'Youth L']
 
 interface ImageEntry {
   file: File
