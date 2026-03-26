@@ -5,7 +5,22 @@ import { createClient } from '@/lib/supabase/client'
 import { uploadProductImage } from '@/lib/uploadImage'
 import { Plus, X, Upload, CheckCircle, AlertCircle, Layers } from 'lucide-react'
 
-const ALL_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL', '4XL', '5XL', 'Youth S', 'Youth M', 'Youth L']
+const CATEGORY_SIZES: Record<string, string[]> = {
+  Soccer:     ['Kids XXS', 'Kids XS', 'Kids S', 'Kids M', 'Kids L', 'Kids XL', 'Kids 2XL', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'],
+  Hockey:     ['Kids S/M', 'Kids L/XL', 'M (50)', 'L (52)', 'XL (54)', '2XL (56)', '3XL (60)'],
+  Basketball: ['Kids S', 'Kids M', 'Kids L', 'Kids XL', 'S (44)', 'M (48)', 'L (50)', 'XL (52)', '2XL (54)'],
+  Baseball:   ['Kids S', 'Kids M', 'Kids L', 'Kids XL', 'M (48)', 'L (50)', 'XL (52)', '2XL (54)', '3XL (56)'],
+  Football:   ['Kids S', 'Kids M', 'Kids L', 'Kids XL', 'M (40)', 'L (44)', 'XL (48)', '2XL (52)', '3XL (56)', '4XL (60)'],
+  Rugby:      ['S', 'M', 'L', 'XL', '2XL', '3XL'],
+  Racing:     ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'],
+  Cycling:    ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'],
+  Tennis:     ['XS', 'S', 'M', 'L', 'XL', '2XL'],
+}
+const DEFAULT_SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL']
+
+function getSizesForCategory(categoryName: string): string[] {
+  return CATEGORY_SIZES[categoryName] ?? DEFAULT_SIZES
+}
 
 interface ImageEntry {
   file: File
@@ -17,21 +32,34 @@ interface ImageEntry {
 
 interface ProductDraft {
   _id: number
+  title: string
   price: string
   sizes: string[]
   featured: boolean
+  showDescription: boolean
+  description: string
   images: ImageEntry[]
   dragOver: boolean
 }
 
 let _nextId = 1
-function makeBlank(): ProductDraft {
-  return { _id: _nextId++, price: '', sizes: ['S', 'M', 'L', 'XL', 'XXL'], featured: false, images: [], dragOver: false }
+function makeBlank(categoryName: string): ProductDraft {
+  return {
+    _id: _nextId++,
+    title: '',
+    price: '',
+    sizes: getSizesForCategory(categoryName),
+    featured: false,
+    showDescription: false,
+    description: '',
+    images: [],
+    dragOver: false,
+  }
 }
 
-function ImageThumb({
-  img, isPrimary, onRemove, onMakePrimary,
-}: { img: ImageEntry; isPrimary: boolean; onRemove: () => void; onMakePrimary: () => void }) {
+function ImageThumb({ img, isPrimary, onRemove, onMakePrimary }: {
+  img: ImageEntry; isPrimary: boolean; onRemove: () => void; onMakePrimary: () => void
+}) {
   return (
     <div className="relative w-[72px] h-[72px] rounded-lg overflow-hidden border border-[#333] shrink-0 bg-[#222]">
       <img src={img.preview} alt="" className="w-full h-full object-cover" />
@@ -51,7 +79,7 @@ function ImageThumb({
             className="absolute top-1 right-1 bg-black/70 rounded-full p-0.5 text-white hover:bg-red-500 transition-colors">
             <X size={9} />
           </button>
-          {!isPrimary && img.url && (
+          {!isPrimary && (
             <button type="button" onClick={onMakePrimary}
               className="absolute bottom-1 left-1 text-[8px] bg-black/60 text-[#c9a84c] rounded px-1 py-0.5 hover:bg-[#c9a84c] hover:text-black transition-colors font-bold">
               ★
@@ -66,12 +94,11 @@ function ImageThumb({
   )
 }
 
-function ProductCard({
-  product, index, totalCount, onUpdate, onRemove,
-}: {
+function ProductCard({ product, index, totalCount, availableSizes, onUpdate, onRemove }: {
   product: ProductDraft
   index: number
   totalCount: number
+  availableSizes: string[]
   onUpdate: (patch: Partial<ProductDraft>) => void
   onRemove: () => void
 }) {
@@ -128,6 +155,13 @@ function ProductCard({
         )}
       </div>
 
+      <div className="mb-4">
+        <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Title</p>
+        <input type="text" placeholder="e.g. Argentina Home Jersey 2024"
+          value={product.title} onChange={e => onUpdate({ title: e.target.value })}
+          className="w-full px-4 py-2.5 bg-[#111] border border-[#333] rounded-lg text-white text-sm placeholder-[#444] focus:outline-none focus:ring-2 focus:ring-[#c9a84c]" />
+      </div>
+
       <div className="flex gap-5 flex-wrap">
         <div className="flex-1 min-w-[240px]">
           <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Images</p>
@@ -152,8 +186,7 @@ function ProductCard({
             <div className="flex flex-wrap gap-2">
               {product.images.map((img, i) => (
                 <ImageThumb key={i} img={img} isPrimary={i === 0}
-                  onRemove={() => removeImg(i)}
-                  onMakePrimary={() => makePrimary(i)} />
+                  onRemove={() => removeImg(i)} onMakePrimary={() => makePrimary(i)} />
               ))}
             </div>
           )}
@@ -173,9 +206,9 @@ function ProductCard({
           <div>
             <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Sizes</p>
             <div className="flex flex-wrap gap-1.5">
-              {ALL_SIZES.map(s => (
+              {availableSizes.map(s => (
                 <button key={s} type="button" onClick={() => toggleSize(s)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-all ${
                     product.sizes.includes(s)
                       ? 'bg-[#c9a84c] border-[#c9a84c] text-black'
                       : 'bg-[#111] border-[#333] text-gray-500 hover:border-[#555]'
@@ -193,11 +226,23 @@ function ProductCard({
             <span className="text-sm text-gray-400">Featured on homepage</span>
           </label>
 
-          <div className="bg-[#c9a84c08] border border-[#c9a84c20] rounded-lg px-3 py-2 text-[11px] text-[#c9a84c80]">
-            💡 Title & description are added individually after publishing.
-          </div>
+          <label className="flex items-center gap-2.5 cursor-pointer select-none">
+            <input type="checkbox" checked={product.showDescription}
+              onChange={e => onUpdate({ showDescription: e.target.checked, description: '' })}
+              className="w-4 h-4 accent-[#c9a84c]" />
+            <span className="text-sm text-gray-400">Add description</span>
+          </label>
         </div>
       </div>
+
+      {product.showDescription && (
+        <div className="mt-4">
+          <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Description</p>
+          <textarea rows={3} placeholder="Describe this jersey — material, team, year, etc."
+            value={product.description} onChange={e => onUpdate({ description: e.target.value })}
+            className="w-full px-4 py-2.5 bg-[#111] border border-[#333] rounded-lg text-white text-sm placeholder-[#444] focus:outline-none focus:ring-2 focus:ring-[#c9a84c] resize-none" />
+        </div>
+      )}
     </div>
   )
 }
@@ -206,14 +251,25 @@ export default function BulkUploadPage() {
   const supabase = createClient()
   const [categories, setCategories] = useState<any[]>([])
   const [categoryId, setCategoryId] = useState('')
-  const [products, setProducts] = useState<ProductDraft[]>([makeBlank()])
+  const [products, setProducts] = useState<ProductDraft[]>([])
   const [publishing, setPublishing] = useState(false)
   const [progressText, setProgressText] = useState('')
   const [result, setResult] = useState<{ success: number; errors: string[] } | null>(null)
 
   useEffect(() => {
-    supabase.from('categories').select('*').order('name').then(({ data }) => setCategories(data ?? []))
+    supabase.from('categories').select('*').order('name').then(({ data }) => {
+      setCategories(data ?? [])
+    })
   }, [])
+
+  const categoryName = categories.find(c => c.id === categoryId)?.name ?? ''
+
+  const handleCategoryChange = (id: string) => {
+    const name = categories.find(c => c.id === id)?.name ?? ''
+    setCategoryId(id)
+    setProducts([makeBlank(name)])
+    setResult(null)
+  }
 
   const updateProduct = (id: number, patch: Partial<ProductDraft>) =>
     setProducts(prev => prev.map(p => p._id === id ? { ...p, ...patch } : p))
@@ -222,14 +278,19 @@ export default function BulkUploadPage() {
     setProducts(prev => prev.filter(p => p._id !== id))
 
   const addProduct = () =>
-    setProducts(prev => [...prev, makeBlank()])
+    setProducts(prev => [...prev, makeBlank(categoryName)])
 
-  const categoryName = categories.find(c => c.id === categoryId)?.name ?? ''
+  const availableSizes = getSizesForCategory(categoryName)
 
   const canPublish =
     !!categoryId &&
     products.length > 0 &&
-    products.every(p => p.price !== '' && parseFloat(p.price) > 0 && p.images.length > 0)
+    products.every(p =>
+      p.title.trim() !== '' &&
+      p.price !== '' &&
+      parseFloat(p.price) > 0 &&
+      p.images.length > 0
+    )
 
   const handlePublish = async () => {
     if (!canPublish || publishing) return
@@ -285,8 +346,8 @@ export default function BulkUploadPage() {
       const { data: inserted, error: prodErr } = await supabase
         .from('products')
         .insert({
-          title: `New ${categoryName} Jersey`,
-          description: null,
+          title: product.title.trim(),
+          description: product.showDescription && product.description.trim() ? product.description.trim() : null,
           price: parseFloat(product.price),
           category_id: categoryId,
           featured: product.featured,
@@ -317,7 +378,7 @@ export default function BulkUploadPage() {
 
     if (successCount > 0 && errors.length === 0) {
       setTimeout(() => {
-        setProducts([makeBlank()])
+        setProducts([makeBlank(categoryName)])
         setCategoryId('')
         setResult(null)
       }, 3000)
@@ -331,7 +392,7 @@ export default function BulkUploadPage() {
         <h1 className="text-2xl font-black text-white">Bulk Upload</h1>
       </div>
       <p className="text-gray-500 text-sm mb-8">
-        Pick a category, add products with images &amp; pricing, then publish all at once. Titles &amp; descriptions are updated individually afterwards.
+        Pick a category, fill in product details, then publish all at once.
       </p>
 
       <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-5 mb-5">
@@ -346,7 +407,7 @@ export default function BulkUploadPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           {categories.map(cat => (
-            <button key={cat.id} type="button" onClick={() => setCategoryId(cat.id)}
+            <button key={cat.id} type="button" onClick={() => handleCategoryChange(cat.id)}
               className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${
                 categoryId === cat.id
                   ? 'bg-[#c9a84c] border-[#c9a84c] text-black'
@@ -373,6 +434,7 @@ export default function BulkUploadPage() {
           <div className="space-y-4 mb-4">
             {products.map((p, i) => (
               <ProductCard key={p._id} product={p} index={i} totalCount={products.length}
+                availableSizes={availableSizes}
                 onUpdate={patch => updateProduct(p._id, patch)}
                 onRemove={() => removeProduct(p._id)} />
             ))}
@@ -383,18 +445,16 @@ export default function BulkUploadPage() {
             <Plus size={15} /> Add Another Product
           </button>
 
-          {!canPublish && (
+          {!canPublish && products.length > 0 && (
             <div className="flex items-start gap-2.5 bg-yellow-500/5 border border-yellow-500/20 rounded-xl px-4 py-3 mb-4">
               <AlertCircle size={14} className="text-yellow-500 shrink-0 mt-0.5" />
-              <p className="text-xs text-yellow-500/80">Each product needs at least 1 image and a price before publishing.</p>
+              <p className="text-xs text-yellow-500/80">Each product needs a title, at least 1 image, and a price before publishing.</p>
             </div>
           )}
 
           {result && (
             <div className={`rounded-xl px-4 py-3 mb-4 border ${
-              result.errors.length === 0
-                ? 'bg-emerald-500/5 border-emerald-500/20'
-                : 'bg-red-500/5 border-red-500/20'
+              result.errors.length === 0 ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-red-500/5 border-red-500/20'
             }`}>
               {result.success > 0 && (
                 <p className="text-sm font-bold text-emerald-400 flex items-center gap-2 mb-1">

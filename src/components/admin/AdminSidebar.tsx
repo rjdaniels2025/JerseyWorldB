@@ -9,6 +9,7 @@ const links = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/products', label: 'Products', icon: Package },
   { href: '/admin/bulk-upload', label: 'Bulk Upload', icon: Layers },
+  { href: '/admin/bulk-upload', label: 'Bulk Upload', icon: Layers },
   { href: '/admin/categories', label: 'Categories', icon: Tag },
   { href: '/admin/banners', label: 'Banners', icon: Image },
   { href: '/admin/promotions', label: 'Pricing', icon: Megaphone },
