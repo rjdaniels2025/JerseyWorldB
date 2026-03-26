@@ -22,12 +22,13 @@ export default async function Home() {
         {hero?.image_url ? (
           <>
             {/* Image drives the height, no fixed height, no gaps */}
+            <div className="w-full h-[60vh] sm:h-[75vh] md:h-screen overflow-hidden">
             <img
               src={hero.image_url}
               alt={hero.title ?? 'Hero'}
-              className="w-full block"
-              style={{ display: 'block' }}
+              className="w-full h-full object-cover"
             />
+          </div>
             {/* Subtle gradient at bottom for text legibility */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#161515] via-transparent to-transparent" />
           </>
