@@ -50,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         style={{ backgroundColor: '#161515', color: '#f0ede8', minHeight: '100vh' }}>
 
         <div aria-hidden="true" style={{
-          position: 'fixed', inset: 0, zIndex: 0,
+          position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden',
           pointerEvents: 'none', overflow: 'hidden',
         }}>
           <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 140% 100% at 50% 50%, #1a1818 0%, #0e0d0d 100%)' }} />
