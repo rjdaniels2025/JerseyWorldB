@@ -18,7 +18,7 @@ export default async function Home() {
     <div>
 
       {/* ── Hero ── */}
-      <section className="relative w-full">
+      <section className="relative w-screen left-1/2 -translate-x-1/2 overflow-hidden">
         {hero?.image_url ? (
           <>
             {/* Image drives the height, no fixed height, no gaps */}
@@ -26,7 +26,7 @@ export default async function Home() {
             <img
               src={hero.image_url}
               alt={hero.title ?? 'Hero'}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover block"
             />
           </div>
             {/* Subtle gradient at bottom for text legibility */}
@@ -109,7 +109,7 @@ export default async function Home() {
           {promoItem?.image_url ? (
             <div className="flex justify-center">
               <div className="relative rounded-2xl overflow-hidden border border-[#2e2d2d] shadow-[0_8px_60px_#00000060] w-full" style={{ maxWidth: '420px', aspectRatio: '9/16' }}>
-                <img src={promoItem.image_url} alt={promoItem.title ?? 'Pricing'} className="w-full h-full object-cover" />
+                <img src={promoItem.image_url} alt={promoItem.title ?? 'Pricing'} className="w-full h-full object-cover block" />
                 {(promoItem.title || promoItem.discount_percentage) && (
                   <div className="absolute inset-0 bg-gradient-to-t from-[#111111cc] via-transparent to-transparent flex items-end p-6">
                     <div>
