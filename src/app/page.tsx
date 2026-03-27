@@ -18,7 +18,7 @@ export default async function Home() {
     <div>
 
       {/* ── Hero ── */}
-      <section className="relative w-screen left-1/2 -translate-x-1/2 overflow-hidden">
+      <section className="relative w-full overflow-hidden -mx-0" style={{ width: "100vw", marginLeft: "calc(50% - 50vw)" }}>
         {hero?.image_url ? (
           <>
             {/* Image drives the height, no fixed height, no gaps */}
