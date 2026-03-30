@@ -6,6 +6,7 @@ import { uploadProductImage } from '@/lib/uploadImage'
 import { Plus, X, Upload, CheckCircle, AlertCircle, Layers } from 'lucide-react'
 
 const CATEGORY_SIZES: Record<string, string[]> = {
+  '2026 World Cup': ['Kids XXS', 'Kids XS', 'Kids S', 'Kids M', 'Kids L', 'Kids XL', 'Kids 2XL', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'],
   Soccer:     ['Kids XXS', 'Kids XS', 'Kids S', 'Kids M', 'Kids L', 'Kids XL', 'Kids 2XL', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'],
   Hockey:     ['Kids S/M', 'Kids L/XL', 'M (50)', 'L (52)', 'XL (54)', '2XL (56)', '3XL (60)'],
   Basketball: ['Kids S', 'Kids M', 'Kids L', 'Kids XL', 'S (44)', 'M (48)', 'L (50)', 'XL (52)', '2XL (54)'],
