@@ -11,6 +11,7 @@ const links = [
   ['/shop', 'Shop'],
   ['/world-cup-2026', '🏆 World Cup'],
   ['/custom-designs', 'Custom Designs'],
+  ['/team-packages', 'Team Packages'],
   ['/fan-gallery', 'Fan Gallery'],
   ['/contact', 'Contact'],
 ]

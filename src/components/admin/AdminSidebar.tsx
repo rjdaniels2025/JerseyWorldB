@@ -15,6 +15,7 @@ const links = [
   { href: '/admin/gallery', label: 'Fan Gallery', icon: Users },
   { href: '/admin/custom-designs', label: 'Custom Designs', icon: Paintbrush },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
+  { href: '/admin/team-packages', label: 'Team Packages', icon: Store },
 ]
 
 export default function AdminSidebar() {
