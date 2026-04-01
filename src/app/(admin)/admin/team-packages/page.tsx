@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { uploadPackageImage } from '@/lib/uploadImage'
 
 type Package = {
   id: string
@@ -10,6 +11,7 @@ type Package = {
   price_per_unit: number | null
   active: boolean
   sort_order: number
+  image_url: string | null
 }
 
 type PackageLead = {
@@ -34,6 +36,8 @@ export default function AdminTeamPackages() {
   const [tab, setTab] = useState<'packages' | 'leads'>('packages')
   const [editing, setEditing] = useState<Package | 'new' | null>(null)
   const [form, setForm] = useState(emptyForm)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => { fetchAll() }, [])
@@ -53,23 +57,39 @@ export default function AdminTeamPackages() {
   function startEdit(pkg: Package) {
     setEditing(pkg)
     setForm({ name: pkg.name, description: pkg.description ?? '', price_per_unit: pkg.price_per_unit?.toString() ?? '', active: pkg.active, sort_order: pkg.sort_order })
+    setImageFile(null)
+    setImagePreview(pkg.image_url ?? null)
+  }
+
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
   }
 
   async function handleSave() {
     if (!form.name.trim()) return alert('Package name is required.')
     setSaving(true)
     const supabase = createClient()
+    let image_url = editing !== 'new' ? (editing as Package).image_url : null
+    if (imageFile) {
+      image_url = await uploadPackageImage(imageFile)
+    }
     const payload = {
       name: form.name.trim(),
       description: form.description.trim() || null,
       price_per_unit: form.price_per_unit !== '' ? parseFloat(form.price_per_unit) : null,
       active: form.active,
       sort_order: parseInt(form.sort_order.toString()) || 0,
+      image_url,
     }
     if (editing === 'new') await supabase.from('team_packages').insert([payload])
     else await supabase.from('team_packages').update(payload).eq('id', (editing as Package).id)
     setSaving(false)
     setEditing(null)
+    setImageFile(null)
+    setImagePreview(null)
     fetchAll()
   }
 
@@ -135,6 +155,25 @@ export default function AdminTeamPackages() {
                       className="w-full bg-[#1e1e1e] border border-[#2e2d2d] text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#c9a84c] transition" />
                   </div>
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-[#f0ede8] mb-2">Package Image</label>
+                  {imagePreview && (
+                    <div className="relative w-40 h-40 mb-3 rounded-xl overflow-hidden border border-[#2e2d2d]">
+                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => { setImageFile(null); setImagePreview(null) }}
+                        className="absolute top-1.5 right-1.5 bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black transition">
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                  <label className="flex items-center gap-2 cursor-pointer w-fit px-4 py-2 bg-[#1e1e1e] border border-[#2e2d2d] text-gray-400 rounded-xl hover:border-[#c9a84c] hover:text-white transition text-sm">
+                    <span>📁</span> {imagePreview ? 'Change Image' : 'Upload Image'}
+                    <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                  </label>
+                </div>
+
                 <div className="flex items-center gap-3">
                   <input type="checkbox" id="active" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })}
                     className="w-4 h-4 accent-[#c9a84c]" />
@@ -143,9 +182,9 @@ export default function AdminTeamPackages() {
                 <div className="flex gap-3 pt-2">
                   <button onClick={handleSave} disabled={saving}
                     className="px-6 py-2 bg-[#c9a84c] text-black font-semibold rounded-xl hover:bg-[#b8943d] transition disabled:opacity-50">
-                    {saving ? 'Saving...' : 'Save Package'}
+                    {saving ? 'Uploading & Saving...' : 'Save Package'}
                   </button>
-                  <button onClick={() => setEditing(null)}
+                  <button onClick={() => { setEditing(null); setImageFile(null); setImagePreview(null) }}
                     className="px-6 py-2 border border-[#2e2d2d] text-gray-400 rounded-xl hover:bg-[#1a1a1a] transition">
                     Cancel
                   </button>
@@ -156,7 +195,7 @@ export default function AdminTeamPackages() {
 
           <div className="flex justify-between items-center mb-4">
             <p className="text-sm text-gray-500">{packages.length} package(s)</p>
-            <button onClick={() => { setEditing('new'); setForm(emptyForm) }}
+            <button onClick={() => { setEditing('new'); setForm(emptyForm); setImageFile(null); setImagePreview(null) }}
               className="px-5 py-2 bg-[#c9a84c] text-black text-sm font-semibold rounded-xl hover:bg-[#b8943d] transition">
               + New Package
             </button>
@@ -165,13 +204,18 @@ export default function AdminTeamPackages() {
           <div className="space-y-3">
             {packages.map(pkg => (
               <div key={pkg.id} className="bg-[#161515] border border-[#2e2d2d] rounded-xl p-5 flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-semibold text-white">{pkg.name}</h4>
-                    {!pkg.active && <span className="text-xs bg-[#2e2d2d] text-gray-500 px-2 py-0.5 rounded-full">Hidden</span>}
+                <div className="flex gap-4 flex-1">
+                  {pkg.image_url && (
+                    <img src={pkg.image_url} alt={pkg.name} className="w-16 h-16 rounded-xl object-cover border border-[#2e2d2d] shrink-0" />
+                  )}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h4 className="font-semibold text-white">{pkg.name}</h4>
+                      {!pkg.active && <span className="text-xs bg-[#2e2d2d] text-gray-500 px-2 py-0.5 rounded-full">Hidden</span>}
+                    </div>
+                    {pkg.description && <p className="text-sm text-gray-500 mb-1 line-clamp-2">{pkg.description}</p>}
+                    {pkg.price_per_unit && <p className="text-sm text-[#c9a84c] font-medium">${Number(pkg.price_per_unit).toFixed(2)} / unit</p>}
                   </div>
-                  {pkg.description && <p className="text-sm text-gray-500 mb-1 line-clamp-2">{pkg.description}</p>}
-                  {pkg.price_per_unit && <p className="text-sm text-[#c9a84c] font-medium">${Number(pkg.price_per_unit).toFixed(2)} / unit</p>}
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <button onClick={() => startEdit(pkg)}

@@ -8,6 +8,7 @@ type Package = {
   name: string
   description: string | null
   price_per_unit: number | null
+  image_url: string | null
 }
 
 type Props = { packages: Package[] }
@@ -63,19 +64,24 @@ export default function TeamPackagesClient({ packages }: Props) {
                 </p>
                 <button
                   onClick={() => setSelected(null)}
-                  className="px-6 py-2.5 bg-[#c9a84c] text-black font-semibold rounded-xl hover:bg-[#b8943d] transition"
-                >
+                  className="px-6 py-2.5 bg-[#c9a84c] text-black font-semibold rounded-xl hover:bg-[#b8943d] transition">
                   Browse More Packages
                 </button>
               </div>
             ) : (
               <>
                 <div className="flex items-start justify-between mb-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-white">{selected.name}</h2>
-                    {selected.price_per_unit && (
-                      <p className="text-[#a09890] text-sm mt-1">${Number(selected.price_per_unit).toFixed(2)} per unit</p>
+                  <div className="flex gap-4 items-start">
+                    {selected.image_url && (
+                      <img src={selected.image_url} alt={selected.name}
+                        className="w-20 h-20 rounded-xl object-cover border border-[#2e2d2d] shrink-0" />
                     )}
+                    <div>
+                      <h2 className="text-xl font-bold text-white">{selected.name}</h2>
+                      {selected.price_per_unit && (
+                        <p className="text-[#a09890] text-sm mt-1">${Number(selected.price_per_unit).toFixed(2)} per unit</p>
+                      )}
+                    </div>
                   </div>
                   <button onClick={() => setSelected(null)} className="text-sm text-[#a09890] hover:text-white underline transition">
                     ← Back
@@ -91,12 +97,9 @@ export default function TeamPackagesClient({ packages }: Props) {
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
                     <label className="block text-sm font-medium text-[#f0ede8] mb-1">How many jerseys do you need? *</label>
-                    <input
-                      type="number" min="1" required
-                      value={form.quantity}
+                    <input type="number" min="1" required value={form.quantity}
                       onChange={e => setForm({ ...form, quantity: parseInt(e.target.value) || 1 })}
-                      className="w-full bg-[#1e1e1e] border border-[#2e2d2d] text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#c9a84c] transition"
-                    />
+                      className="w-full bg-[#1e1e1e] border border-[#2e2d2d] text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#c9a84c] transition" />
                     {selected.price_per_unit && form.quantity > 0 && (
                       <p className="text-xs text-[#a09890] mt-1">
                         Estimated total: <span className="text-[#c9a84c] font-semibold">${(form.quantity * Number(selected.price_per_unit)).toFixed(2)}</span>
@@ -156,22 +159,29 @@ export default function TeamPackagesClient({ packages }: Props) {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {packages.map(pkg => (
-              <div key={pkg.id} className="bg-[#161515] border border-[#2e2d2d] rounded-2xl p-6 flex flex-col justify-between hover:border-[#c9a84c40] transition-all duration-300">
-                <div>
-                  <h3 className="text-lg font-bold text-white mb-2">{pkg.name}</h3>
-                  {pkg.description && (
-                    <p className="text-[#a09890] text-sm mb-4 leading-relaxed">{pkg.description}</p>
-                  )}
-                  {pkg.price_per_unit && (
-                    <p className="text-sm text-[#a09890] mb-4">
-                      From <span className="text-[#c9a84c] font-bold text-base">${Number(pkg.price_per_unit).toFixed(2)}</span> / unit
-                    </p>
-                  )}
+              <div key={pkg.id} className="bg-[#161515] border border-[#2e2d2d] rounded-2xl overflow-hidden flex flex-col hover:border-[#c9a84c40] transition-all duration-300">
+                {pkg.image_url && (
+                  <div className="w-full h-48 overflow-hidden">
+                    <img src={pkg.image_url} alt={pkg.name} className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <div className="p-6 flex flex-col flex-1 justify-between">
+                  <div>
+                    <h3 className="text-lg font-bold text-white mb-2">{pkg.name}</h3>
+                    {pkg.description && (
+                      <p className="text-[#a09890] text-sm mb-4 leading-relaxed">{pkg.description}</p>
+                    )}
+                    {pkg.price_per_unit && (
+                      <p className="text-sm text-[#a09890] mb-4">
+                        From <span className="text-[#c9a84c] font-bold text-base">${Number(pkg.price_per_unit).toFixed(2)}</span> / unit
+                      </p>
+                    )}
+                  </div>
+                  <button onClick={() => handleSelect(pkg)}
+                    className="mt-4 w-full bg-[#c9a84c] text-black font-semibold py-2.5 rounded-xl hover:bg-[#b8943d] transition">
+                    Order This Package
+                  </button>
                 </div>
-                <button onClick={() => handleSelect(pkg)}
-                  className="mt-4 w-full bg-[#c9a84c] text-black font-semibold py-2.5 rounded-xl hover:bg-[#b8943d] transition">
-                  Order This Package
-                </button>
               </div>
             ))}
           </div>
