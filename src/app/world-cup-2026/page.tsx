@@ -10,7 +10,7 @@ export default async function WorldCup2026() {
   const { data: category } = await supabase
     .from('categories')
     .select('id')
-    .eq('slug', 'national-teams')
+    .eq('slug', '2026-world-cup')
     .single()
 
   const { data: products } = await supabase

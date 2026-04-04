@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { uploadImageToR2 } from '@/lib/uploadImage'
+import { Upload, X } from 'lucide-react'
 
 type Package = {
   id: string
@@ -13,35 +15,71 @@ type Package = {
 
 type Props = { packages: Package[] }
 
+const QUANTITY_OPTIONS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,25,30,35,40,50,60,75,100]
+
 const emptyForm = {
   customer_name: '',
   email: '',
   phone: '',
   city: '',
-  quantity: 1,
+  quantity: '' as number | '',
   notes: '',
 }
 
 export default function TeamPackagesClient({ packages }: Props) {
   const [selected, setSelected] = useState<Package | null>(null)
   const [form, setForm] = useState(emptyForm)
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
   function handleSelect(pkg: Package) {
     setSelected(pkg)
     setForm(emptyForm)
+    setLogoFile(null)
+    setLogoPreview(null)
     setSubmitted(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setLogoFile(file)
+    setLogoPreview(URL.createObjectURL(file))
+  }
+
+  function removeLogo() {
+    setLogoFile(null)
+    setLogoPreview(null)
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSubmitting(true)
     const supabase = createClient()
-    const { error } = await supabase.from('package_leads').insert([
-      { ...form, package_id: selected!.id },
-    ])
+
+    let logo_url: string | null = null
+    if (logoFile) {
+      try {
+        logo_url = await uploadImageToR2(logoFile, 'package-logos')
+      } catch {
+        // Logo upload failed — continue without it
+      }
+    }
+
+    const { error } = await supabase.from('package_leads').insert([{
+      package_id: selected!.id,
+      customer_name: form.customer_name,
+      email: form.email,
+      phone: form.phone || null,
+      city: form.city || null,
+      quantity: form.quantity || 1,
+      notes: form.notes || null,
+      logo_url,
+      status: 'New',
+    }])
     setSubmitting(false)
     if (!error) setSubmitted(true)
     else alert('Something went wrong. Please try again.')
@@ -96,14 +134,47 @@ export default function TeamPackagesClient({ packages }: Props) {
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
-                    <label className="block text-sm font-medium text-[#f0ede8] mb-1">How many jerseys do you need? *</label>
-                    <input type="number" min="1" required value={form.quantity}
-                      onChange={e => setForm({ ...form, quantity: parseInt(e.target.value) || 1 })}
-                      className="w-full bg-[#1e1e1e] border border-[#2e2d2d] text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#c9a84c] transition" />
-                    {selected.price_per_unit && form.quantity > 0 && (
+                    <label className="block text-sm font-medium text-[#f0ede8] mb-1">
+                      How many packages do you need? <span className="text-[#a09890] font-normal">(optional)</span>
+                    </label>
+                    <select
+                      value={form.quantity}
+                      onChange={e => setForm({ ...form, quantity: e.target.value === '' ? '' : parseInt(e.target.value) })}
+                      className="w-full bg-[#1e1e1e] border border-[#2e2d2d] text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#c9a84c] transition appearance-none"
+                    >
+                      <option value="">Select quantity...</option>
+                      {QUANTITY_OPTIONS.map(n => (
+                        <option key={n} value={n}>{n}{n === 100 ? '+' : ''}</option>
+                      ))}
+                    </select>
+                    {selected.price_per_unit && form.quantity !== '' && form.quantity > 0 && (
                       <p className="text-xs text-[#a09890] mt-1">
                         Estimated total: <span className="text-[#c9a84c] font-semibold">${(form.quantity * Number(selected.price_per_unit)).toFixed(2)}</span>
                       </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-[#f0ede8] mb-1">
+                      Team Logo <span className="text-[#a09890] font-normal">(optional)</span>
+                    </label>
+                    {logoPreview ? (
+                      <div className="flex items-center gap-4">
+                        <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-[#2e2d2d] bg-[#1e1e1e]">
+                          <img src={logoPreview} alt="Logo preview" className="w-full h-full object-contain p-1" />
+                          <button type="button" onClick={removeLogo}
+                            className="absolute top-1 right-1 bg-black/70 rounded-full p-0.5 text-white hover:bg-black transition">
+                            <X size={10} />
+                          </button>
+                        </div>
+                        <p className="text-sm text-[#a09890]">{logoFile?.name}</p>
+                      </div>
+                    ) : (
+                      <label className="flex items-center gap-3 cursor-pointer px-4 py-3 bg-[#1e1e1e] border border-dashed border-[#2e2d2d] rounded-xl hover:border-[#c9a84c] hover:text-white text-[#a09890] transition text-sm w-full">
+                        <Upload size={16} className="text-[#c9a84c] shrink-0" />
+                        <span>Upload your team logo (PNG, JPG, SVG)</span>
+                        <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
+                      </label>
                     )}
                   </div>
 
