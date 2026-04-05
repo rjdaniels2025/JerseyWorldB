@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 
 interface Props {
@@ -8,9 +9,10 @@ interface Props {
   price: string
   image?: string
   index?: number
+  priority?: boolean
 }
 
-export default function ProductCard({ id, title, price, image, index = 0 }: Props) {
+export default function ProductCard({ id, title, price, image, index = 0, priority = false }: Props) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -21,12 +23,16 @@ export default function ProductCard({ id, title, price, image, index = 0 }: Prop
       <Link href={`/product/${id}`} className="group block">
         <div className="relative overflow-hidden rounded-2xl bg-[#1f1e1e] border border-[#2e2d2d] mb-4 shadow-[0_2px_20px_#00000040] group-hover:border-[#c9a84c44] group-hover:shadow-[0_8px_40px_#00000060] transition-all duration-500">
           {image ? (
-            <div className="w-full aspect-[4/5] overflow-hidden">
-              <img
+            <div className="w-full aspect-[4/5] overflow-hidden relative">
+              <Image
                 src={image}
                 alt={title}
-                className="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-out"
-                loading="lazy"
+                fill
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                className="object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-out"
+                priority={priority}
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAARCAAKAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABgUE/8QAIRAAAQMEAwEAAAAAAAAAAAAAAQIDBAAFERIhMUH/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8Amab1FDeadkNFTjQPKUJJByfbHvVt2i7W7cIF3mJCEyGw4EhOAMn1yc8UrRQH/9k="
               />
             </div>
           ) : (

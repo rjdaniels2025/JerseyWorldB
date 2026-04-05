@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import ProductCard from '@/components/ProductCard'
 
-export const revalidate = 0
+export const revalidate = 60
 
 export default async function Home() {
   const supabase = await createClient()
