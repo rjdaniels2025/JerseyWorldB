@@ -7,6 +7,15 @@ const nextConfig = {
         hostname: 'hjvxhdlhpmybholczzti.supabase.co',
         pathname: '/storage/v1/object/public/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'pub-cb7afc41228249a784b9c7c2a44390bd.r2.dev',
+      },
+      {
+        protocol: 'https',
+        hostname: 'gvhtrsmnrfffhfjehsif.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
     ],
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 31536000,
