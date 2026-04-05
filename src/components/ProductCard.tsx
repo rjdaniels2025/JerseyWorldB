@@ -20,7 +20,7 @@ export default function ProductCard({ id, title, price, image, index = 0, priori
       transition={{ delay: index * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
       <Link href={`/product/${id}`} className="group block">
-        <div className="relative overflow-hidden rounded-2xl bg-[#1f1e1e] border border-[#2e2d2d] mb-4 shadow-[0_2px_20px_#00000040] group-hover:border-[#c9a84c44] group-hover:shadow-[0_8px_40px_#00000060] transition-all duration-500">
+        <div className="relative overflow-hidden rounded-2xl bg-black border border-[#2e2d2d] mb-4 shadow-[0_2px_20px_#00000040] group-hover:border-[#c9a84c44] group-hover:shadow-[0_8px_40px_#00000060] transition-all duration-500">
           {image ? (
             <div className="w-full aspect-[4/5] overflow-hidden">
               <img
