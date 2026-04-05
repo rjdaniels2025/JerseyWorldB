@@ -28,7 +28,7 @@ export default function ProductCard({ id, title, price, image, index = 0, priori
                 alt={title}
                 loading={priority ? 'eager' : 'lazy'}
                 fetchPriority={priority ? 'high' : 'auto'}
-                className="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-out"
+                className="w-full h-full object-contain group-hover:scale-[1.06] transition-transform duration-700 ease-out"
               />
             </div>
           ) : (
