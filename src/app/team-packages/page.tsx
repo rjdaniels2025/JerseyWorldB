@@ -7,7 +7,7 @@ export default async function TeamPackages() {
   const supabase = await createClient()
   const { data: packages } = await supabase
     .from('team_packages')
-    .select('*')
+    .select('*, team_package_images(id, image_url, sort_order)')
     .eq('active', true)
     .order('sort_order', { ascending: true })
 
