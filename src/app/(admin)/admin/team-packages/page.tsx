@@ -4,6 +4,12 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { uploadPackageImage } from '@/lib/uploadImage'
 
+type PackageImage = {
+  id: string
+  image_url: string
+  sort_order: number | null
+}
+
 type Package = {
   id: string
   name: string
@@ -12,6 +18,7 @@ type Package = {
   active: boolean
   sort_order: number
   image_url: string | null
+  team_package_images?: PackageImage[]
 }
 
 type PackageLead = {
@@ -36,8 +43,8 @@ export default function AdminTeamPackages() {
   const [tab, setTab] = useState<'packages' | 'leads'>('packages')
   const [editing, setEditing] = useState<Package | 'new' | null>(null)
   const [form, setForm] = useState(emptyForm)
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [existingImages, setExistingImages] = useState<PackageImage[]>([])
   const [saving, setSaving] = useState(false)
 
   useEffect(() => { fetchAll() }, [])
@@ -57,39 +64,50 @@ export default function AdminTeamPackages() {
   function startEdit(pkg: Package) {
     setEditing(pkg)
     setForm({ name: pkg.name, description: pkg.description ?? '', price_per_unit: pkg.price_per_unit?.toString() ?? '', active: pkg.active, sort_order: pkg.sort_order })
-    setImageFile(null)
-    setImagePreview(pkg.image_url ?? null)
+    setImageFiles([])
+    setExistingImages(pkg.team_package_images ?? [])
   }
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setImageFile(file)
-    setImagePreview(URL.createObjectURL(file))
+    const files = Array.from(e.target.files ?? [])
+    if (!files.length) return
+    setImageFiles(prev => [...prev, ...files])
   }
 
   async function handleSave() {
     if (!form.name.trim()) return alert('Package name is required.')
     setSaving(true)
     const supabase = createClient()
-    let image_url = editing !== 'new' ? (editing as Package).image_url : null
-    if (imageFile) {
-      image_url = await uploadPackageImage(imageFile)
-    }
     const payload = {
       name: form.name.trim(),
       description: form.description.trim() || null,
       price_per_unit: form.price_per_unit !== '' ? parseFloat(form.price_per_unit) : null,
       active: form.active,
       sort_order: parseInt(form.sort_order.toString()) || 0,
-      image_url,
     }
-    if (editing === 'new') await supabase.from('team_packages').insert([payload])
-    else await supabase.from('team_packages').update(payload).eq('id', (editing as Package).id)
+    let pkgId: string
+    if (editing === 'new') {
+      const { data } = await supabase.from('team_packages').insert([payload]).select().single()
+      pkgId = data.id
+    } else {
+      pkgId = (editing as Package).id
+      await supabase.from('team_packages').update(payload).eq('id', pkgId)
+    }
+    // Upload new images and insert into team_package_images
+    for (let i = 0; i < imageFiles.length; i++) {
+      const url = await uploadPackageImage(imageFiles[i])
+      if (url) {
+        await supabase.from('team_package_images').insert([{
+          package_id: pkgId,
+          image_url: url,
+          sort_order: (existingImages.length) + i,
+        }])
+      }
+    }
     setSaving(false)
     setEditing(null)
-    setImageFile(null)
-    setImagePreview(null)
+    setImageFiles([])
+    setExistingImages([])
     fetchAll()
   }
 
@@ -157,21 +175,38 @@ export default function AdminTeamPackages() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-[#f0ede8] mb-2">Package Image</label>
-                  {imagePreview && (
-                    <div className="relative w-40 h-40 mb-3 rounded-xl overflow-hidden border border-[#2e2d2d]">
-                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                      <button
-                        onClick={() => { setImageFile(null); setImagePreview(null) }}
-                        className="absolute top-1.5 right-1.5 bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black transition">
-                        ✕
-                      </button>
-                    </div>
-                  )}
+                  <label className="block text-sm font-medium text-[#f0ede8] mb-2">Package Images</label>
+                  <div className="flex flex-wrap gap-3 mb-3">
+                    {existingImages.map(img => (
+                      <div key={img.id} className="relative w-28 h-28 rounded-xl overflow-hidden border border-[#2e2d2d]">
+                        <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                        <button
+                          onClick={async () => {
+                            const supabase = createClient()
+                            await supabase.from('team_package_images').delete().eq('id', img.id)
+                            setExistingImages(prev => prev.filter(i => i.id !== img.id))
+                          }}
+                          className="absolute top-1 right-1 bg-black/70 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-black transition">
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                    {imageFiles.map((file, i) => (
+                      <div key={i} className="relative w-28 h-28 rounded-xl overflow-hidden border border-[#c9a84c40]">
+                        <img src={URL.createObjectURL(file)} alt="" className="w-full h-full object-cover" />
+                        <button
+                          onClick={() => setImageFiles(prev => prev.filter((_, j) => j !== i))}
+                          className="absolute top-1 right-1 bg-black/70 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-black transition">
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                   <label className="flex items-center gap-2 cursor-pointer w-fit px-4 py-2 bg-[#1e1e1e] border border-[#2e2d2d] text-gray-400 rounded-xl hover:border-[#c9a84c] hover:text-white transition text-sm">
-                    <span>📁</span> {imagePreview ? 'Change Image' : 'Upload Image'}
-                    <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                    <span>📁</span> Add Images
+                    <input type="file" accept="image/*" multiple onChange={handleImageChange} className="hidden" />
                   </label>
+                  <p className="text-xs text-gray-600 mt-1">You can upload multiple images. Click ✕ to remove.</p>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -184,7 +219,7 @@ export default function AdminTeamPackages() {
                     className="px-6 py-2 bg-[#c9a84c] text-black font-semibold rounded-xl hover:bg-[#b8943d] transition disabled:opacity-50">
                     {saving ? 'Uploading & Saving...' : 'Save Package'}
                   </button>
-                  <button onClick={() => { setEditing(null); setImageFile(null); setImagePreview(null) }}
+                  <button onClick={() => { setEditing(null); setImageFiles([]); setExistingImages([]) }}
                     className="px-6 py-2 border border-[#2e2d2d] text-gray-400 rounded-xl hover:bg-[#1a1a1a] transition">
                     Cancel
                   </button>
@@ -195,7 +230,7 @@ export default function AdminTeamPackages() {
 
           <div className="flex justify-between items-center mb-4">
             <p className="text-sm text-gray-500">{packages.length} package(s)</p>
-            <button onClick={() => { setEditing('new'); setForm(emptyForm); setImageFile(null); setImagePreview(null) }}
+            <button onClick={() => { setEditing('new'); setForm(emptyForm); setImageFiles([]); setExistingImages([]) }}
               className="px-5 py-2 bg-[#c9a84c] text-black text-sm font-semibold rounded-xl hover:bg-[#b8943d] transition">
               + New Package
             </button>

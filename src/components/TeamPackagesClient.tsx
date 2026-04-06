@@ -5,12 +5,19 @@ import { createClient } from '@/lib/supabase/client'
 import { uploadImageToR2 } from '@/lib/uploadImage'
 import { Upload, X } from 'lucide-react'
 
+type PackageImage = {
+  id: string
+  image_url: string
+  sort_order: number | null
+}
+
 type Package = {
   id: string
   name: string
   description: string | null
   price_per_unit: number | null
   image_url: string | null
+  team_package_images?: PackageImage[]
 }
 
 type Props = { packages: Package[] }
@@ -33,6 +40,8 @@ export default function TeamPackagesClient({ packages }: Props) {
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
+  const [expanded, setExpanded] = useState<string | null>(null)
 
   function handleSelect(pkg: Package) {
     setSelected(pkg)
@@ -40,6 +49,8 @@ export default function TeamPackagesClient({ packages }: Props) {
     setLogoFile(null)
     setLogoPreview(null)
     setSubmitted(false)
+    setActiveImageIndex(0)
+    setExpanded(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -192,9 +203,10 @@ export default function TeamPackagesClient({ packages }: Props) {
                         className="w-full bg-[#1e1e1e] border border-[#2e2d2d] text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#c9a84c] transition" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-[#f0ede8] mb-1">Phone</label>
-                      <input type="tel" value={form.phone}
+                      <label className="block text-sm font-medium text-[#f0ede8] mb-1">Phone *</label>
+                      <input type="tel" required value={form.phone}
                         onChange={e => setForm({ ...form, phone: e.target.value })}
+                        placeholder="+1 (416) 000-0000"
                         className="w-full bg-[#1e1e1e] border border-[#2e2d2d] text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#c9a84c] transition" />
                     </div>
                     <div>
@@ -229,32 +241,64 @@ export default function TeamPackagesClient({ packages }: Props) {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {packages.map(pkg => (
-              <div key={pkg.id} className="bg-[#161515] border border-[#2e2d2d] rounded-2xl overflow-hidden flex flex-col hover:border-[#c9a84c40] transition-all duration-300">
-                {pkg.image_url && (
-                  <div className="w-full h-48 overflow-hidden">
-                    <img src={pkg.image_url} alt={pkg.name} className="w-full h-full object-cover" />
+            {packages.map(pkg => {
+              const images = [
+                ...(pkg.team_package_images ?? []).sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)).map(i => i.image_url),
+                ...(pkg.image_url && !(pkg.team_package_images?.length) ? [pkg.image_url] : [])
+              ]
+              const imgIndex = activeImageIndex
+              const isExpanded = expanded === pkg.id
+              return (
+                <div key={pkg.id} className="bg-[#161515] border border-[#2e2d2d] rounded-2xl overflow-hidden flex flex-col hover:border-[#c9a84c40] transition-all duration-300">
+                  {images.length > 0 && (
+                    <div className="relative w-full h-48 overflow-hidden bg-[#111]">
+                      <img src={images[imgIndex % images.length]} alt={pkg.name} className="w-full h-full object-cover" />
+                      {images.length > 1 && (
+                        <>
+                          <button onClick={() => setActiveImageIndex(i => i === 0 ? images.length - 1 : i - 1)}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs transition">‹</button>
+                          <button onClick={() => setActiveImageIndex(i => (i + 1) % images.length)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs transition">›</button>
+                          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                            {images.map((_, i) => (
+                              <button key={i} onClick={() => setActiveImageIndex(i)}
+                                className={`w-1.5 h-1.5 rounded-full transition ${i === imgIndex % images.length ? "bg-[#c9a84c]" : "bg-white/40"}`} />
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  <div className="p-6 flex flex-col flex-1 justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold text-white mb-2">{pkg.name}</h3>
+                      {pkg.description && (
+                        <div className="mb-4">
+                          <p className={`text-[#a09890] text-sm leading-relaxed ${isExpanded ? "" : "line-clamp-1"}`}>
+                            {pkg.description}
+                          </p>
+                          {pkg.description.length > 80 && (
+                            <button onClick={() => setExpanded(isExpanded ? null : pkg.id)}
+                              className="text-xs text-[#c9a84c] hover:underline mt-0.5">
+                              {isExpanded ? "Show less" : "Read more"}
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      {pkg.price_per_unit && (
+                        <p className="text-sm text-[#a09890] mb-4">
+                          From <span className="text-[#c9a84c] font-bold text-base">${Number(pkg.price_per_unit).toFixed(2)}</span> / unit
+                        </p>
+                      )}
+                    </div>
+                    <button onClick={() => handleSelect(pkg)}
+                      className="mt-4 w-full bg-[#c9a84c] text-black font-semibold py-2.5 rounded-xl hover:bg-[#b8943d] transition">
+                      Order This Package
+                    </button>
                   </div>
-                )}
-                <div className="p-6 flex flex-col flex-1 justify-between">
-                  <div>
-                    <h3 className="text-lg font-bold text-white mb-2">{pkg.name}</h3>
-                    {pkg.description && (
-                      <p className="text-[#a09890] text-sm mb-4 leading-relaxed">{pkg.description}</p>
-                    )}
-                    {pkg.price_per_unit && (
-                      <p className="text-sm text-[#a09890] mb-4">
-                        From <span className="text-[#c9a84c] font-bold text-base">${Number(pkg.price_per_unit).toFixed(2)}</span> / unit
-                      </p>
-                    )}
-                  </div>
-                  <button onClick={() => handleSelect(pkg)}
-                    className="mt-4 w-full bg-[#c9a84c] text-black font-semibold py-2.5 rounded-xl hover:bg-[#b8943d] transition">
-                    Order This Package
-                  </button>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
