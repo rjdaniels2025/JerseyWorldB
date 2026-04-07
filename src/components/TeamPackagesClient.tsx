@@ -247,7 +247,7 @@ export default function TeamPackagesClient({ packages }: Props) {
               return (
                 <div key={pkg.id} className="bg-[#161515] border border-[#2e2d2d] rounded-2xl overflow-hidden flex flex-col hover:border-[#c9a84c40] transition-all duration-300">
                   {images.length > 0 && (
-                    <div className="relative w-full overflow-hidden bg-[#111]" style={{ aspectRatio: "4/3" }}>
+                    <div className="relative w-full overflow-hidden bg-[#111]" style={{ aspectRatio: "3/4" }}>
                       <img src={images[imgIndex % images.length]} alt={pkg.name} className="w-full h-full object-cover" />
                       {images.length > 1 && (
                         <>
@@ -268,19 +268,6 @@ export default function TeamPackagesClient({ packages }: Props) {
                   <div className="p-6 flex flex-col flex-1 justify-between">
                     <div>
                       <h3 className="text-lg font-bold text-white mb-2">{pkg.name}</h3>
-                      {pkg.description && (
-                        <div className="mb-4">
-                          <p className={`text-[#a09890] text-sm leading-relaxed ${isExpanded ? "" : "line-clamp-1"}`}>
-                            {pkg.description}
-                          </p>
-                          {pkg.description.length > 80 && (
-                            <button onClick={() => setExpanded(isExpanded ? null : pkg.id)}
-                              className="text-xs text-[#c9a84c] hover:underline mt-0.5">
-                              {isExpanded ? "Show less" : "Read more"}
-                            </button>
-                          )}
-                        </div>
-                      )}
                       {pkg.price_per_unit && (
                         <p className="text-sm text-[#a09890] mb-4">
                           From <span className="text-[#c9a84c] font-bold text-base">${Number(pkg.price_per_unit).toFixed(2)}</span> / unit
