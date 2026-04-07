@@ -247,8 +247,8 @@ export default function TeamPackagesClient({ packages }: Props) {
               return (
                 <div key={pkg.id} className="bg-[#161515] border border-[#2e2d2d] rounded-2xl overflow-hidden flex flex-col hover:border-[#c9a84c40] transition-all duration-300">
                   {images.length > 0 && (
-                    <div className="relative w-full overflow-hidden bg-[#111]" style={{ aspectRatio: "4/5" }}>
-                      <img src={images[imgIndex % images.length]} alt={pkg.name} className="w-full h-full object-cover" />
+                    <div className="relative w-full overflow-hidden bg-white" style={{ aspectRatio: "1/1" }}>
+                      <img src={images[imgIndex % images.length]} alt={pkg.name} className="w-full h-full object-contain" />
                       {images.length > 1 && (
                         <>
                           <button onClick={() => setActiveImageIndex(i => i === 0 ? images.length - 1 : i - 1)}
