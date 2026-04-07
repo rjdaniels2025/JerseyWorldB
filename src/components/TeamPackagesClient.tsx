@@ -137,11 +137,7 @@ export default function TeamPackagesClient({ packages }: Props) {
                   </button>
                 </div>
 
-                {selected.description && (
-                  <p className="text-[#a09890] mb-6 border-l-4 border-[#c9a84c40] pl-4 italic text-sm leading-relaxed">
-                    {selected.description}
-                  </p>
-                )}
+
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
@@ -251,7 +247,7 @@ export default function TeamPackagesClient({ packages }: Props) {
               return (
                 <div key={pkg.id} className="bg-[#161515] border border-[#2e2d2d] rounded-2xl overflow-hidden flex flex-col hover:border-[#c9a84c40] transition-all duration-300">
                   {images.length > 0 && (
-                    <div className="relative w-full h-48 overflow-hidden bg-[#111]">
+                    <div className="relative w-full overflow-hidden bg-[#111]" style={{ aspectRatio: "4/3" }}>
                       <img src={images[imgIndex % images.length]} alt={pkg.name} className="w-full h-full object-cover" />
                       {images.length > 1 && (
                         <>
