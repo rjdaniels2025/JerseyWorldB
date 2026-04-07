@@ -26,7 +26,7 @@ export default function SizeCharts() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {SIZE_CHARTS.map((url, i) => (
             <button key={i} onClick={() => setLightbox(url)}
-              className="group bg-white rounded-2xl overflow-hidden border border-[#2e2d2d] hover:border-[#c9a84c] transition-all duration-300 hover:shadow-[0_0_30px_#c9a84c20] focus:outline-none">
+              className="group bg-[#111111] rounded-2xl overflow-hidden border border-[#2e2d2d] hover:border-[#c9a84c] transition-all duration-300 hover:shadow-[0_0_30px_#c9a84c20] focus:outline-none">
               <div className="relative w-full" style={{ aspectRatio: '3/4' }}>
                 <img src={url} alt={'Size chart ' + (i + 1)} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center">
