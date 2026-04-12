@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { X, Star } from 'lucide-react'
+import { X } from 'lucide-react'
 
 const REVIEW_LINK = 'https://g.page/r/CYk4gyifupn8EBM/review'
 
@@ -38,8 +38,7 @@ export default function Reviews() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3 bg-[#c9a84c] text-black font-bold rounded-xl hover:bg-[#b8943d] transition text-sm uppercase tracking-wide"
           >
-            <Star size={16} fill="black" />
-            Leave a Review
+            ⭐ Leave a Review
           </a>
         </div>
 
@@ -54,8 +53,7 @@ export default function Reviews() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 bg-[#c9a84c] text-black font-bold rounded-xl hover:bg-[#b8943d] transition text-sm"
             >
-              <Star size={16} fill="black" />
-              Leave a Review
+              ⭐ Leave a Review
             </a>
           </div>
         ) : (
