@@ -21,7 +21,7 @@ export default function AdminOrders() {
   const load = async () => {
     const { data } = await supabase
       .from('leads')
-      .select('*, products(title)')
+      .select('*, products(title, product_images(image_url, sort_order))')
       .order('created_at', { ascending: false })
     setOrders(data ?? [])
     setLoading(false)
@@ -79,12 +79,21 @@ export default function AdminOrders() {
                     <div key={order.id} className="bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl overflow-hidden">
                       <div className="p-3 cursor-pointer" onClick={() => setExpanded(expanded === order.id ? null : order.id)}>
                         <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="font-bold text-white text-sm truncate">{order.customer_name}</p>
-                            {order.products?.title && (
-                              <p className="text-xs text-[#c9a84c] truncate mt-0.5">{order.products.title}</p>
+                          <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                            {order.products?.product_images?.length > 0 && (
+                              <img
+                                src={order.products.product_images.sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))[0].image_url}
+                                alt={order.products.title}
+                                className="w-12 h-12 rounded-lg object-cover border border-[#2e2d2d] shrink-0"
+                              />
                             )}
-                            <p className="text-xs text-gray-600 mt-0.5">{fmt(order.created_at)}</p>
+                            <div className="min-w-0">
+                              <p className="font-bold text-white text-sm truncate">{order.customer_name}</p>
+                              {order.products?.title && (
+                                <p className="text-xs text-[#c9a84c] truncate mt-0.5">{order.products.title}</p>
+                              )}
+                              <p className="text-xs text-gray-600 mt-0.5">{fmt(order.created_at)}</p>
+                            </div>
                           </div>
                           <ChevronDown size={14} className={`text-gray-600 shrink-0 mt-1 transition-transform ${expanded === order.id ? 'rotate-180' : ''}`} />
                         </div>
