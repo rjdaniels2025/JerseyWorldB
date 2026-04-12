@@ -1,6 +1,5 @@
 'use client'
 import Link from 'next/link'
-import Image from 'next/image'
 import { motion } from 'framer-motion'
 
 interface Props {
@@ -23,14 +22,13 @@ export default function ProductCard({ id, title, price, image, index = 0, priori
       <Link href={`/product/${id}`} className="group block">
         <div className="relative overflow-hidden rounded-2xl bg-black border border-[#2e2d2d] mb-4 shadow-[0_2px_20px_#00000040] group-hover:border-[#c9a84c44] group-hover:shadow-[0_8px_40px_#00000060] transition-all duration-500">
           {image ? (
-            <div className="w-full aspect-[4/5] overflow-hidden relative">
-              <Image
+            <div className="w-full aspect-[4/5] overflow-hidden">
+              <img
                 src={image}
                 alt={title}
-                fill
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                priority={priority}
-                className="object-contain group-hover:scale-[1.06] transition-transform duration-700 ease-out"
+                loading={priority ? 'eager' : 'lazy'}
+                fetchPriority={priority ? 'high' : 'auto'}
+                className="w-full h-full object-contain group-hover:scale-[1.06] transition-transform duration-700 ease-out"
               />
             </div>
           ) : (
