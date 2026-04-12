@@ -15,6 +15,7 @@ const links = [
   ['/fan-gallery', 'Fan Gallery'],
   ['/contact', 'Contact'],
   ['/size-charts', 'Size Charts'],
+  ['/reviews', 'Reviews'],
 ]
 
 const TikTokIcon = () => (

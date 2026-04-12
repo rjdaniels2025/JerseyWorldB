@@ -20,7 +20,8 @@ type Package = {
   team_package_images?: PackageImage[]
 }
 
-type Props = { packages: Package[] }
+type TeamPhoto = { id: string; image_url: string; sort_order: number }
+type Props = { packages: Package[]; teamPhotos: TeamPhoto[] }
 
 const QUANTITY_OPTIONS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,25,30,35,40,50,60,75,100]
 
@@ -33,7 +34,7 @@ const emptyForm = {
   notes: '',
 }
 
-export default function TeamPackagesClient({ packages }: Props) {
+export default function TeamPackagesClient({ packages, teamPhotos }: Props) {
   const [selected, setSelected] = useState<Package | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [logoFile, setLogoFile] = useState<File | null>(null)
@@ -42,6 +43,7 @@ export default function TeamPackagesClient({ packages }: Props) {
   const [submitted, setSubmitted] = useState(false)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [expanded, setExpanded] = useState<string | null>(null)
+  const [carouselIndex, setCarouselIndex] = useState(0)
 
   function handleSelect(pkg: Package) {
     setSelected(pkg)
@@ -100,7 +102,40 @@ export default function TeamPackagesClient({ packages }: Props) {
     <div className="min-h-screen bg-[#0e0e0e] pt-28 pb-20 px-4">
       <div className="max-w-5xl mx-auto">
         <h1 className="text-3xl sm:text-4xl font-bold text-white text-center mb-2">Team Packages</h1>
-        <p className="text-center text-[#a09890] mb-12">Outfit your whole team. Select a package below to get started.</p>
+        <p className="text-center text-[#a09890] mb-8">Outfit your whole team. Select a package below to get started.</p>
+
+        {teamPhotos.length > 0 && (
+          <div className="relative w-full mb-12 rounded-2xl overflow-hidden border border-[#2e2d2d] bg-[#111]" style={{ aspectRatio: '16/6' }}>
+            {teamPhotos.map((photo, i) => (
+              <img
+                key={photo.id}
+                src={photo.image_url}
+                alt="Team photo"
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${i === carouselIndex ? 'opacity-100' : 'opacity-0'}`}
+              />
+            ))}
+            {teamPhotos.length > 1 && (
+              <>
+                <button
+                  onClick={() => setCarouselIndex(i => i === 0 ? teamPhotos.length - 1 : i - 1)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white rounded-full w-9 h-9 flex items-center justify-center text-lg transition z-10">
+                  ‹
+                </button>
+                <button
+                  onClick={() => setCarouselIndex(i => (i + 1) % teamPhotos.length)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white rounded-full w-9 h-9 flex items-center justify-center text-lg transition z-10">
+                  ›
+                </button>
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                  {teamPhotos.map((_, i) => (
+                    <button key={i} onClick={() => setCarouselIndex(i)}
+                      className={`w-2 h-2 rounded-full transition ${i === carouselIndex ? 'bg-[#c9a84c]' : 'bg-white/40'}`} />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
         {selected && (
           <div className="bg-[#161515] border border-[#2e2d2d] rounded-2xl p-6 sm:p-8 mb-12">
