@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { uploadPackageImage } from '@/lib/uploadImage'
+import { uploadPackageImage, uploadImageToR2 } from '@/lib/uploadImage'
 
 type PackageImage = {
   id: string
@@ -40,7 +40,9 @@ export default function AdminTeamPackages() {
   const [packages, setPackages] = useState<Package[]>([])
   const [leads, setLeads] = useState<PackageLead[]>([])
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'packages' | 'leads'>('packages')
+  const [tab, setTab] = useState<'packages' | 'leads' | 'photos'>('packages')
+  const [photos, setPhotos] = useState<any[]>([])
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [editing, setEditing] = useState<Package | 'new' | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [imageFiles, setImageFiles] = useState<File[]>([])
@@ -52,12 +54,14 @@ export default function AdminTeamPackages() {
   async function fetchAll() {
     setLoading(true)
     const supabase = createClient()
-    const [{ data: pkgs }, { data: ls }] = await Promise.all([
+    const [{ data: pkgs }, { data: ls }, { data: ph }] = await Promise.all([
       supabase.from('team_packages').select('*').order('sort_order'),
       supabase.from('package_leads').select('*, team_packages(name)').order('created_at', { ascending: false }),
+      supabase.from('team_photos').select('*').order('sort_order'),
     ])
     setPackages(pkgs ?? [])
     setLeads(ls ?? [])
+    setPhotos(ph ?? [])
     setLoading(false)
   }
 
@@ -131,12 +135,12 @@ export default function AdminTeamPackages() {
       <h2 className="text-2xl font-bold mb-6 text-white">Team Packages</h2>
 
       <div className="flex gap-4 mb-6 border-b border-[#2e2d2d]">
-        {(['packages', 'leads'] as const).map(t => (
+        {(['packages', 'leads', 'photos'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={`pb-2 px-1 capitalize font-medium text-sm border-b-2 transition ${
               tab === t ? 'border-[#c9a84c] text-[#c9a84c]' : 'border-transparent text-gray-500 hover:text-white'
             }`}>
-            {t === 'leads' ? 'Package Inquiries' : 'Manage Packages'}
+            {t === 'leads' ? 'Package Inquiries' : t === 'photos' ? 'Team Photos' : 'Manage Packages'}
           </button>
         ))}
       </div>
@@ -269,6 +273,57 @@ export default function AdminTeamPackages() {
             )}
           </div>
         </>
+      )}
+
+      {tab === 'photos' && (
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-sm text-gray-500">{photos.length} photo(s) — these appear in the carousel at the top of the Team Packages page</p>
+            <label className={`flex items-center gap-2 px-5 py-2 bg-[#c9a84c] text-black text-sm font-semibold rounded-xl hover:bg-[#b8943d] transition cursor-pointer ${uploadingPhoto ? 'opacity-50 pointer-events-none' : ''}`}>
+              + {uploadingPhoto ? 'Uploading...' : 'Add Photos'}
+              <input type="file" accept="image/*" multiple className="hidden" onChange={async (e) => {
+                const files = Array.from(e.target.files ?? [])
+                if (!files.length) return
+                setUploadingPhoto(true)
+                const supabase = createClient()
+                for (let i = 0; i < files.length; i++) {
+                  const url = await uploadImageToR2(files[i], 'team-photos')
+                  await supabase.from('team_photos').insert({ image_url: url, sort_order: photos.length + i, active: true })
+                }
+                setUploadingPhoto(false)
+                fetchAll()
+              }} />
+            </label>
+          </div>
+          {photos.length === 0 ? (
+            <div className="text-center text-gray-500 py-12">No team photos yet. Upload wide/landscape photos for the carousel.</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {photos.map(photo => (
+                <div key={photo.id} className="relative rounded-xl overflow-hidden border border-[#2e2d2d] group" style={{ aspectRatio: '16/6' }}>
+                  <img src={photo.image_url} alt="Team photo" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
+                    <button onClick={async () => {
+                      const supabase = createClient()
+                      await supabase.from('team_photos').update({ active: !photo.active }).eq('id', photo.id)
+                      fetchAll()
+                    }} className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${photo.active ? 'bg-yellow-500/80 text-black' : 'bg-green-500/80 text-black'}`}>
+                      {photo.active ? 'Hide' : 'Show'}
+                    </button>
+                    <button onClick={async () => {
+                      if (!confirm('Delete this photo?')) return
+                      const supabase = createClient()
+                      await supabase.from('team_photos').delete().eq('id', photo.id)
+                      fetchAll()
+                    }} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/80 text-white">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       )}
 
       {tab === 'leads' && (
