@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Package, Tag, Image, Megaphone, Users, ShoppingBag, Store, Paintbrush, Settings, LogOut, ChevronDown, Layers } from 'lucide-react'
+import { LayoutDashboard, Package, Tag, Image, Megaphone, Users, ShoppingBag, Store, Paintbrush, Settings, LogOut, ChevronDown, Layers, Ruler } from 'lucide-react'
 
 const links = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -16,6 +16,7 @@ const links = [
   { href: '/admin/custom-designs', label: 'Custom Designs', icon: Paintbrush },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
   { href: '/admin/team-packages', label: 'Team Packages', icon: Store },
+  { href: '/admin/size-charts', label: 'Size Charts', icon: Ruler },
 ]
 
 export default function AdminSidebar() {

@@ -25,3 +25,5 @@ export const uploadPromotionImage  = (f: File) => uploadImageToR2(f, 'promotions
 export const uploadFanGalleryImage = (f: File) => uploadImageToR2(f, 'fan-gallery')
 export const uploadCustomDesign    = (f: File) => uploadImageToR2(f, 'custom-designs')
 export const uploadPackageImage    = (f: File) => uploadImageToR2(f, 'team-packages')
+
+export const uploadSizeChart = (f: File) => uploadImageToR2(f, 'size-charts')
