@@ -9,10 +9,10 @@ export default async function Home() {
   const [{ data: banners }, { data: products }, { data: promo }] = await Promise.all([
     supabase.from('banners').select('*').eq('active', true).order('created_at', { ascending: false }).limit(1),
     supabase.from('products').select('*, product_images(image_url, sort_order)').eq('featured', true).limit(4),
-    supabase.from('promotions').select('*').eq('active', true).order('created_at', { ascending: false }).limit(1),
+    supabase.from('promotions').select('*').eq('active', true).order('created_at', { ascending: false }),
   ])
   const hero = banners?.[0] ?? null
-  const promoItem = promo?.[0] ?? null
+  const promoItems = promo ?? []
 
   return (
     <div>
