@@ -20,8 +20,7 @@ type Package = {
   team_package_images?: PackageImage[]
 }
 
-type TeamPhoto = { id: string; image_url: string; sort_order: number }
-type Props = { packages: Package[]; teamPhotos: TeamPhoto[] }
+type Props = { packages: Package[] }
 
 const QUANTITY_OPTIONS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,25,30,35,40,50,60,75,100]
 
@@ -34,16 +33,14 @@ const emptyForm = {
   notes: '',
 }
 
-export default function TeamPackagesClient({ packages, teamPhotos }: Props) {
+export default function TeamPackagesClient({ packages }: Props) {
   const [selected, setSelected] = useState<Package | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-  const [activeImageIndex, setActiveImageIndex] = useState(0)
-  const [expanded, setExpanded] = useState<string | null>(null)
-  const [carouselIndex, setCarouselIndex] = useState(0)
+  const [cardImageIndex, setCardImageIndex] = useState<Record<string, number>>({})
 
   function handleSelect(pkg: Package) {
     setSelected(pkg)
@@ -51,8 +48,6 @@ export default function TeamPackagesClient({ packages, teamPhotos }: Props) {
     setLogoFile(null)
     setLogoPreview(null)
     setSubmitted(false)
-    setActiveImageIndex(0)
-    setExpanded(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -104,39 +99,6 @@ export default function TeamPackagesClient({ packages, teamPhotos }: Props) {
         <h1 className="text-3xl sm:text-4xl font-bold text-white text-center mb-2">Team Packages</h1>
         <p className="text-center text-[#a09890] mb-8">Outfit your whole team. Select a package below to get started.</p>
 
-        {teamPhotos.length > 0 && (
-          <div className="relative w-full mb-12 rounded-2xl overflow-hidden border border-[#2e2d2d] bg-[#111]" style={{ aspectRatio: '16/6' }}>
-            {teamPhotos.map((photo, i) => (
-              <img
-                key={photo.id}
-                src={photo.image_url}
-                alt="Team photo"
-                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${i === carouselIndex ? 'opacity-100' : 'opacity-0'}`}
-              />
-            ))}
-            {teamPhotos.length > 1 && (
-              <>
-                <button
-                  onClick={() => setCarouselIndex(i => i === 0 ? teamPhotos.length - 1 : i - 1)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white rounded-full w-9 h-9 flex items-center justify-center text-lg transition z-10">
-                  ‹
-                </button>
-                <button
-                  onClick={() => setCarouselIndex(i => (i + 1) % teamPhotos.length)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white rounded-full w-9 h-9 flex items-center justify-center text-lg transition z-10">
-                  ›
-                </button>
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-                  {teamPhotos.map((_, i) => (
-                    <button key={i} onClick={() => setCarouselIndex(i)}
-                      className={`w-2 h-2 rounded-full transition ${i === carouselIndex ? 'bg-[#c9a84c]' : 'bg-white/40'}`} />
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
         {selected && (
           <div className="bg-[#161515] border border-[#2e2d2d] rounded-2xl p-6 sm:p-8 mb-12">
             {submitted ? (
@@ -171,8 +133,6 @@ export default function TeamPackagesClient({ packages, teamPhotos }: Props) {
                     ← Back
                   </button>
                 </div>
-
-
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
@@ -277,23 +237,38 @@ export default function TeamPackagesClient({ packages, teamPhotos }: Props) {
                 ...(pkg.team_package_images ?? []).sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)).map(i => i.image_url),
                 ...(pkg.image_url && !(pkg.team_package_images?.length) ? [pkg.image_url] : [])
               ]
-              const imgIndex = activeImageIndex
-              const isExpanded = expanded === pkg.id
+              const imgIndex = cardImageIndex[pkg.id] ?? 0
               return (
                 <div key={pkg.id} className="bg-[#161515] border border-[#2e2d2d] rounded-2xl overflow-hidden flex flex-col hover:border-[#c9a84c40] transition-all duration-300">
                   {images.length > 0 && (
                     <div className="relative w-full overflow-hidden bg-white" style={{ aspectRatio: "1/1" }}>
-                      <img src={images[imgIndex % images.length]} alt={pkg.name} className="w-full h-full object-contain" />
+                      {/* Sliding strip — all images side by side, translateX to active */}
+                      <div
+                        className="flex h-full transition-transform duration-500 ease-in-out"
+                        style={{ width: `${images.length * 100}%`, transform: `translateX(-${imgIndex * (100 / images.length)}%)` }}
+                      >
+                        {images.map((src, i) => (
+                          <div key={i} className="h-full flex-shrink-0" style={{ width: `${100 / images.length}%` }}>
+                            <img src={src} alt={`${pkg.name} ${i + 1}`} className="w-full h-full object-contain" />
+                          </div>
+                        ))}
+                      </div>
                       {images.length > 1 && (
                         <>
-                          <button onClick={() => setActiveImageIndex(i => i === 0 ? images.length - 1 : i - 1)}
-                            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs transition">‹</button>
-                          <button onClick={() => setActiveImageIndex(i => (i + 1) % images.length)}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs transition">›</button>
-                          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                          <button
+                            onClick={() => setCardImageIndex(prev => ({ ...prev, [pkg.id]: imgIndex === 0 ? images.length - 1 : imgIndex - 1 }))}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs transition z-10">
+                            ‹
+                          </button>
+                          <button
+                            onClick={() => setCardImageIndex(prev => ({ ...prev, [pkg.id]: (imgIndex + 1) % images.length }))}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs transition z-10">
+                            ›
+                          </button>
+                          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
                             {images.map((_, i) => (
-                              <button key={i} onClick={() => setActiveImageIndex(i)}
-                                className={`w-1.5 h-1.5 rounded-full transition ${i === imgIndex % images.length ? "bg-[#c9a84c]" : "bg-white/40"}`} />
+                              <button key={i} onClick={() => setCardImageIndex(prev => ({ ...prev, [pkg.id]: i }))}
+                                className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${i === imgIndex ? 'bg-[#c9a84c] w-3' : 'bg-white/40'}`} />
                             ))}
                           </div>
                         </>
