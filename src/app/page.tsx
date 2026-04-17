@@ -106,15 +106,15 @@ export default async function Home() {
             <p className="text-[10px] font-semibold tracking-[0.3em] uppercase text-[#c9a84c] mb-2">What We Offer</p>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#f0ede8] tracking-tight">Pricing</h2>
           </div>
-          {promoItem?.image_url ? (
+          {promoItems?.[0]?.image_url ? (
             <div className="flex justify-center">
               <div className="relative rounded-2xl overflow-hidden border border-[#2e2d2d] shadow-[0_8px_60px_#00000060] w-full" style={{ maxWidth: '420px', aspectRatio: '9/16' }}>
-                <img src={promoItem.image_url} alt={promoItem.title ?? 'Pricing'} className="w-full h-full object-cover block" />
-                {(promoItem.title || promoItem.discount_percentage) && (
+                <img src={promoItems?.[0]?.image_url} alt={promoItems?.[0]?.title ?? 'Pricing'} className="w-full h-full object-cover block" />
+                {(promoItems?.[0]?.title || promoItems?.[0].discount_percentage) && (
                   <div className="absolute inset-0 bg-gradient-to-t from-[#111111cc] via-transparent to-transparent flex items-end p-6">
                     <div>
-                      {promoItem.title && <h3 className="text-xl font-black text-white mb-1">{promoItem.title}</h3>}
-                      {promoItem.discount_percentage && <p className="text-[#c9a84c] font-bold">{promoItem.discount_percentage}% OFF</p>}
+                      {promoItems?.[0]?.title && <h3 className="text-xl font-black text-white mb-1">{promoItems?.[0]?.title}</h3>}
+                      {promoItems?.[0].discount_percentage && <p className="text-[#c9a84c] font-bold">{promoItems?.[0].discount_percentage}% OFF</p>}
                     </div>
                   </div>
                 )}
