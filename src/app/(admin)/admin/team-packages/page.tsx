@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { uploadPackageImage } from '@/lib/uploadImage'
 
@@ -46,6 +46,8 @@ export default function AdminTeamPackages() {
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [existingImages, setExistingImages] = useState<PackageImage[]>([])
   const [saving, setSaving] = useState(false)
+  const [search, setSearch] = useState('')
+  const editRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
   useEffect(() => { fetchAll() }, [])
 
@@ -67,6 +69,10 @@ export default function AdminTeamPackages() {
     setImageFiles([])
     const sorted = [...(pkg.team_package_images ?? [])].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
     setExistingImages(sorted)
+    // Scroll to the row after state update
+    setTimeout(() => {
+      editRefs.current[pkg.id]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 50)
   }
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -124,6 +130,11 @@ export default function AdminTeamPackages() {
     fetchAll()
   }
 
+  const filteredPackages = packages.filter(pkg =>
+    pkg.name.toLowerCase().includes(search.toLowerCase()) ||
+    (pkg.description ?? '').toLowerCase().includes(search.toLowerCase())
+  )
+
   if (loading) return <p className="text-gray-400 p-8">Loading...</p>
 
   return (
@@ -143,138 +154,96 @@ export default function AdminTeamPackages() {
 
       {tab === 'packages' && (
         <>
-          {editing && (
-            <div className="bg-[#161515] border border-[#2e2d2d] rounded-2xl p-6 mb-8">
-              <h3 className="text-lg font-semibold mb-4 text-white">
-                {editing === 'new' ? 'New Package' : `Editing: ${(editing as Package).name}`}
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-[#f0ede8] mb-1">Package Name *</label>
-                  <input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                    className="w-full bg-[#1e1e1e] border border-[#2e2d2d] text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#c9a84c] transition" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[#f0ede8] mb-1">Description</label>
-                  <textarea rows={4} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
-                    placeholder="Describe what's included in this package..."
-                    className="w-full bg-[#1e1e1e] border border-[#2e2d2d] text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#c9a84c] transition resize-none placeholder:text-[#555]" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-[#f0ede8] mb-1">Price Per Unit ($)</label>
-                    <input type="number" min="0" step="0.01" value={form.price_per_unit}
-                      onChange={e => setForm({ ...form, price_per_unit: e.target.value })}
-                      className="w-full bg-[#1e1e1e] border border-[#2e2d2d] text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#c9a84c] transition" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[#f0ede8] mb-1">Sort Order</label>
-                    <input type="number" value={form.sort_order} onChange={e => setForm({ ...form, sort_order: parseInt(e.target.value) || 0 })}
-                      className="w-full bg-[#1e1e1e] border border-[#2e2d2d] text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#c9a84c] transition" />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-[#f0ede8] mb-2">Package Images (Carousel)</label>
-                  <p className="text-xs text-gray-500 mb-3">Upload multiple images — users will be able to swipe through them on the package card.</p>
-                  <div className="flex flex-wrap gap-3 mb-3">
-                    {existingImages.map(img => (
-                      <div key={img.id} className="relative w-28 h-28 rounded-xl overflow-hidden border border-[#2e2d2d]">
-                        <img src={img.image_url} alt="" className="w-full h-full object-cover" />
-                        <button
-                          onClick={async () => {
-                            const supabase = createClient()
-                            await supabase.from('team_package_images').delete().eq('id', img.id)
-                            setExistingImages(prev => prev.filter(i => i.id !== img.id))
-                          }}
-                          className="absolute top-1 right-1 bg-black/70 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-black transition">
-                          ✕
-                        </button>
-                      </div>
-                    ))}
-                    {imageFiles.map((file, i) => (
-                      <div key={i} className="relative w-28 h-28 rounded-xl overflow-hidden border border-[#c9a84c40]">
-                        <img src={URL.createObjectURL(file)} alt="" className="w-full h-full object-cover" />
-                        <button
-                          onClick={() => setImageFiles(prev => prev.filter((_, j) => j !== i))}
-                          className="absolute top-1 right-1 bg-black/70 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-black transition">
-                          ✕
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  <label className="flex items-center gap-2 cursor-pointer w-fit px-4 py-2 bg-[#1e1e1e] border border-[#2e2d2d] text-gray-400 rounded-xl hover:border-[#c9a84c] hover:text-white transition text-sm">
-                    <span>📁</span> Add Images
-                    <input type="file" accept="image/*" multiple onChange={handleImageChange} className="hidden" />
-                  </label>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <input type="checkbox" id="active" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })}
-                    className="w-4 h-4 accent-[#c9a84c]" />
-                  <label htmlFor="active" className="text-sm text-[#f0ede8]">Active (visible on site)</label>
-                </div>
-                <div className="flex gap-3 pt-2">
-                  <button onClick={handleSave} disabled={saving}
-                    className="px-6 py-2 bg-[#c9a84c] text-black font-semibold rounded-xl hover:bg-[#b8943d] transition disabled:opacity-50">
-                    {saving ? 'Uploading & Saving...' : 'Save Package'}
-                  </button>
-                  <button onClick={() => { setEditing(null); setImageFiles([]); setExistingImages([]) }}
-                    className="px-6 py-2 border border-[#2e2d2d] text-gray-400 rounded-xl hover:bg-[#1a1a1a] transition">
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="flex justify-between items-center mb-4">
-            <p className="text-sm text-gray-500">{packages.length} package(s)</p>
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <input
+              type="text"
+              placeholder="Search packages..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="flex-1 bg-[#1e1e1e] border border-[#2e2d2d] text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#c9a84c] placeholder:text-[#555] transition"
+            />
             <button onClick={() => { setEditing('new'); setForm(emptyForm); setImageFiles([]); setExistingImages([]) }}
-              className="px-5 py-2 bg-[#c9a84c] text-black text-sm font-semibold rounded-xl hover:bg-[#b8943d] transition">
+              className="px-5 py-2.5 bg-[#c9a84c] text-black text-sm font-semibold rounded-xl hover:bg-[#b8943d] transition shrink-0">
               + New Package
             </button>
           </div>
 
-          <div className="space-y-3">
-            {packages.map(pkg => (
-              <div key={pkg.id} className="bg-[#161515] border border-[#2e2d2d] rounded-xl p-5 flex items-start justify-between gap-4">
-                <div className="flex gap-4 flex-1">
-                  {(pkg.team_package_images && pkg.team_package_images.length > 0) ? (
-                    <div className="relative shrink-0">
-                      <img src={pkg.team_package_images[0].image_url} alt={pkg.name} className="w-16 h-16 rounded-xl object-cover border border-[#2e2d2d]" />
-                      {pkg.team_package_images.length > 1 && (
-                        <span className="absolute -bottom-1 -right-1 bg-[#c9a84c] text-black text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                          {pkg.team_package_images.length}
-                        </span>
-                      )}
+          {editing === 'new' && (
+            <div className="bg-[#161515] border border-[#c9a84c40] rounded-2xl p-6 mb-4">
+              <h3 className="text-lg font-semibold mb-4 text-white">New Package</h3>
+              <EditForm
+                form={form} setForm={setForm}
+                imageFiles={imageFiles} existingImages={existingImages}
+                setImageFiles={setImageFiles} setExistingImages={setExistingImages}
+                saving={saving} onSave={handleSave}
+                onCancel={() => { setEditing(null); setImageFiles([]); setExistingImages([]) }}
+                handleImageChange={handleImageChange}
+              />
+            </div>
+          )}
+
+          <p className="text-xs text-gray-600 mb-3">{filteredPackages.length} of {packages.length} package(s)</p>
+
+          <div className="space-y-2">
+            {filteredPackages.map(pkg => {
+              const isEditing = editing !== 'new' && (editing as Package)?.id === pkg.id
+              return (
+                <div key={pkg.id} ref={el => { editRefs.current[pkg.id] = el }}>
+                  {isEditing ? (
+                    <div className="bg-[#161515] border border-[#c9a84c] rounded-2xl p-6">
+                      <h3 className="text-lg font-semibold mb-4 text-white">Editing: {pkg.name}</h3>
+                      <EditForm
+                        form={form} setForm={setForm}
+                        imageFiles={imageFiles} existingImages={existingImages}
+                        setImageFiles={setImageFiles} setExistingImages={setExistingImages}
+                        saving={saving} onSave={handleSave}
+                        onCancel={() => { setEditing(null); setImageFiles([]); setExistingImages([]) }}
+                        handleImageChange={handleImageChange}
+                      />
                     </div>
-                  ) : pkg.image_url ? (
-                    <img src={pkg.image_url} alt={pkg.name} className="w-16 h-16 rounded-xl object-cover border border-[#2e2d2d] shrink-0" />
-                  ) : null}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-semibold text-white">{pkg.name}</h4>
-                      {!pkg.active && <span className="text-xs bg-[#2e2d2d] text-gray-500 px-2 py-0.5 rounded-full">Hidden</span>}
+                  ) : (
+                    <div className="bg-[#161515] border border-[#2e2d2d] rounded-xl p-5 flex items-start justify-between gap-4">
+                      <div className="flex gap-4 flex-1">
+                        {(pkg.team_package_images && pkg.team_package_images.length > 0) ? (
+                          <div className="relative shrink-0">
+                            <img src={pkg.team_package_images[0].image_url} alt={pkg.name} className="w-16 h-16 rounded-xl object-cover border border-[#2e2d2d]" />
+                            {pkg.team_package_images.length > 1 && (
+                              <span className="absolute -bottom-1 -right-1 bg-[#c9a84c] text-black text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                                {pkg.team_package_images.length}
+                              </span>
+                            )}
+                          </div>
+                        ) : pkg.image_url ? (
+                          <img src={pkg.image_url} alt={pkg.name} className="w-16 h-16 rounded-xl object-cover border border-[#2e2d2d] shrink-0" />
+                        ) : null}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-semibold text-white">{pkg.name}</h4>
+                            {!pkg.active && <span className="text-xs bg-[#2e2d2d] text-gray-500 px-2 py-0.5 rounded-full">Hidden</span>}
+                          </div>
+                          {pkg.description && <p className="text-sm text-gray-500 mb-1 line-clamp-2">{pkg.description}</p>}
+                          {pkg.price_per_unit && <p className="text-sm text-[#c9a84c] font-medium">${Number(pkg.price_per_unit).toFixed(2)} / unit</p>}
+                        </div>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <button onClick={() => startEdit(pkg)}
+                          className="px-4 py-1.5 text-sm border border-[#2e2d2d] text-gray-400 rounded-lg hover:bg-[#1a1a1a] transition">
+                          Edit
+                        </button>
+                        <button onClick={() => handleDelete(pkg.id)}
+                          className="px-4 py-1.5 text-sm border border-red-900 text-red-500 rounded-lg hover:bg-red-950 transition">
+                          Delete
+                        </button>
+                      </div>
                     </div>
-                    {pkg.description && <p className="text-sm text-gray-500 mb-1 line-clamp-2">{pkg.description}</p>}
-                    {pkg.price_per_unit && <p className="text-sm text-[#c9a84c] font-medium">${Number(pkg.price_per_unit).toFixed(2)} / unit</p>}
-                  </div>
+                  )}
                 </div>
-                <div className="flex gap-2 shrink-0">
-                  <button onClick={() => startEdit(pkg)}
-                    className="px-4 py-1.5 text-sm border border-[#2e2d2d] text-gray-400 rounded-lg hover:bg-[#1a1a1a] transition">
-                    Edit
-                  </button>
-                  <button onClick={() => handleDelete(pkg.id)}
-                    className="px-4 py-1.5 text-sm border border-red-900 text-red-500 rounded-lg hover:bg-red-950 transition">
-                    Delete
-                  </button>
-                </div>
+              )
+            })}
+            {filteredPackages.length === 0 && (
+              <div className="text-center text-gray-500 py-12">
+                {search ? `No packages matching "${search}"` : 'No packages yet. Click "+ New Package" to add one.'}
               </div>
-            ))}
-            {packages.length === 0 && (
-              <div className="text-center text-gray-500 py-12">No packages yet. Click &quot;+ New Package&quot; to add one.</div>
             )}
           </div>
         </>
@@ -314,6 +283,101 @@ export default function AdminTeamPackages() {
           ))}
         </div>
       )}
+    </div>
+  )
+}
+
+type EditFormProps = {
+  form: any
+  setForm: (f: any) => void
+  imageFiles: File[]
+  existingImages: PackageImage[]
+  setImageFiles: (fn: (prev: File[]) => File[]) => void
+  setExistingImages: (fn: (prev: PackageImage[]) => PackageImage[]) => void
+  saving: boolean
+  onSave: () => void
+  onCancel: () => void
+  handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+}
+
+function EditForm({ form, setForm, imageFiles, existingImages, setImageFiles, setExistingImages, saving, onSave, onCancel, handleImageChange }: EditFormProps) {
+  return (
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-[#f0ede8] mb-1">Package Name *</label>
+        <input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
+          className="w-full bg-[#1e1e1e] border border-[#2e2d2d] text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#c9a84c] transition" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-[#f0ede8] mb-1">Description</label>
+        <textarea rows={4} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
+          placeholder="Describe what's included in this package..."
+          className="w-full bg-[#1e1e1e] border border-[#2e2d2d] text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#c9a84c] transition resize-none placeholder:text-[#555]" />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-[#f0ede8] mb-1">Price Per Unit ($)</label>
+          <input type="number" min="0" step="0.01" value={form.price_per_unit}
+            onChange={e => setForm({ ...form, price_per_unit: e.target.value })}
+            className="w-full bg-[#1e1e1e] border border-[#2e2d2d] text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#c9a84c] transition" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-[#f0ede8] mb-1">Sort Order</label>
+          <input type="number" value={form.sort_order} onChange={e => setForm({ ...form, sort_order: parseInt(e.target.value) || 0 })}
+            className="w-full bg-[#1e1e1e] border border-[#2e2d2d] text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#c9a84c] transition" />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-[#f0ede8] mb-1">Package Images (Carousel)</label>
+        <p className="text-xs text-gray-500 mb-3">Upload multiple images — users can swipe through them on the package card.</p>
+        <div className="flex flex-wrap gap-3 mb-3">
+          {existingImages.map(img => (
+            <div key={img.id} className="relative w-28 h-28 rounded-xl overflow-hidden border border-[#2e2d2d]">
+              <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+              <button
+                onClick={async () => {
+                  const supabase = createClient()
+                  await supabase.from('team_package_images').delete().eq('id', img.id)
+                  setExistingImages(prev => prev.filter(i => i.id !== img.id))
+                }}
+                className="absolute top-1 right-1 bg-black/70 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-black transition">
+                ✕
+              </button>
+            </div>
+          ))}
+          {imageFiles.map((file, i) => (
+            <div key={i} className="relative w-28 h-28 rounded-xl overflow-hidden border border-[#c9a84c40]">
+              <img src={URL.createObjectURL(file)} alt="" className="w-full h-full object-cover" />
+              <button
+                onClick={() => setImageFiles(prev => prev.filter((_, j) => j !== i))}
+                className="absolute top-1 right-1 bg-black/70 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-black transition">
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+        <label className="flex items-center gap-2 cursor-pointer w-fit px-4 py-2 bg-[#1e1e1e] border border-[#2e2d2d] text-gray-400 rounded-xl hover:border-[#c9a84c] hover:text-white transition text-sm">
+          <span>📁</span> Add Images
+          <input type="file" accept="image/*" multiple onChange={handleImageChange} className="hidden" />
+        </label>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <input type="checkbox" id="active-check" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })}
+          className="w-4 h-4 accent-[#c9a84c]" />
+        <label htmlFor="active-check" className="text-sm text-[#f0ede8]">Active (visible on site)</label>
+      </div>
+      <div className="flex gap-3 pt-2">
+        <button onClick={onSave} disabled={saving}
+          className="px-6 py-2 bg-[#c9a84c] text-black font-semibold rounded-xl hover:bg-[#b8943d] transition disabled:opacity-50">
+          {saving ? 'Uploading & Saving...' : 'Save Package'}
+        </button>
+        <button onClick={onCancel}
+          className="px-6 py-2 border border-[#2e2d2d] text-gray-400 rounded-xl hover:bg-[#1a1a1a] transition">
+          Cancel
+        </button>
+      </div>
     </div>
   )
 }
