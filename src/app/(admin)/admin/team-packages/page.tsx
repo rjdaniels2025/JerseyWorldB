@@ -65,6 +65,39 @@ export default function AdminTeamPackages() {
     setLoading(false)
   }
 
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? [])
+    if (!files.length) return
+    setUploadingPhoto(true)
+    const supabase = createClient()
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const url = await uploadImageToR2(files[i], 'team-photos')
+        if (!url) throw new Error('Upload returned no URL')
+        const { error } = await supabase.from('team_photos').insert({ image_url: url, sort_order: i, active: true })
+        if (error) throw new Error(error.message)
+      }
+    } catch (err: any) {
+      alert('Upload failed: ' + (err?.message ?? 'Unknown error'))
+    }
+    setUploadingPhoto(false)
+    e.target.value = ''
+    fetchAll()
+  }
+
+  async function handlePhotoDelete(id: string) {
+    if (!confirm('Delete this photo?')) return
+    const supabase = createClient()
+    await supabase.from('team_photos').delete().eq('id', id)
+    fetchAll()
+  }
+
+  async function handlePhotoToggle(id: string, active: boolean) {
+    const supabase = createClient()
+    await supabase.from('team_photos').update({ active: !active }).eq('id', id)
+    fetchAll()
+  }
+
   function startEdit(pkg: Package) {
     setEditing(pkg)
     setForm({ name: pkg.name, description: pkg.description ?? '', price_per_unit: pkg.price_per_unit?.toString() ?? '', active: pkg.active, sort_order: pkg.sort_order })
@@ -303,19 +336,10 @@ export default function AdminTeamPackages() {
                 <div key={photo.id} className="relative rounded-xl overflow-hidden border border-[#2e2d2d] group" style={{ aspectRatio: '16/6' }}>
                   <img src={photo.image_url} alt="Team photo" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
-                    <button onClick={async () => {
-                      const supabase = createClient()
-                      await supabase.from('team_photos').update({ active: !photo.active }).eq('id', photo.id)
-                      fetchAll()
-                    }} className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${photo.active ? 'bg-yellow-500/80 text-black' : 'bg-green-500/80 text-black'}`}>
+                    <button onClick={() => handlePhotoToggle(photo.id, photo.active)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${photo.active ? 'bg-yellow-500/80 text-black' : 'bg-green-500/80 text-black'}`}>
                       {photo.active ? 'Hide' : 'Show'}
                     </button>
-                    <button onClick={async () => {
-                      if (!confirm('Delete this photo?')) return
-                      const supabase = createClient()
-                      await supabase.from('team_photos').delete().eq('id', photo.id)
-                      fetchAll()
-                    }} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/80 text-white">
+                    <button onClick={() => handlePhotoDelete(photo.id)} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/80 text-white">
                       Delete
                     </button>
                   </div>
