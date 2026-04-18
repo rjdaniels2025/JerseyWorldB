@@ -102,7 +102,7 @@ export default function TeamPackagesClient({ packages, teamPhotos }: Props) {
         <p className="text-center text-[#a09890] mb-8">Outfit your whole team. Select a package below to get started.</p>
 
         {teamPhotos.length > 0 && (
-          <div className="relative w-full mb-12 rounded-2xl overflow-hidden border border-[#2e2d2d] bg-[#111]" style={{ aspectRatio: '16/6' }}>
+          <div className="relative w-full mb-12 rounded-2xl overflow-hidden border border-[#2e2d2d] bg-[#111]" style={{ aspectRatio: '16/8' }}>
             {/* Sliding strip */}
             <div
               className="flex h-full transition-transform duration-500 ease-in-out"
