@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { uploadPackageImage } from '@/lib/uploadImage'
+import { uploadPackageImage, uploadImageToR2 } from '@/lib/uploadImage'
 
 type PackageImage = {
   id: string
@@ -39,13 +39,15 @@ const emptyForm = { name: '', description: '', price_per_unit: '', active: true,
 export default function AdminTeamPackages() {
   const [packages, setPackages] = useState<Package[]>([])
   const [leads, setLeads] = useState<PackageLead[]>([])
+  const [photos, setPhotos] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'packages' | 'leads'>('packages')
+  const [tab, setTab] = useState<'packages' | 'leads' | 'photos'>('packages')
   const [editing, setEditing] = useState<Package | 'new' | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [existingImages, setExistingImages] = useState<PackageImage[]>([])
   const [saving, setSaving] = useState(false)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [search, setSearch] = useState('')
   const editRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
@@ -54,12 +56,14 @@ export default function AdminTeamPackages() {
   async function fetchAll() {
     setLoading(true)
     const supabase = createClient()
-    const [{ data: pkgs }, { data: ls }] = await Promise.all([
+    const [{ data: pkgs }, { data: ls }, { data: ph }] = await Promise.all([
       supabase.from('team_packages').select('*, team_package_images(id, image_url, sort_order)').order('sort_order'),
       supabase.from('package_leads').select('*, team_packages(name)').order('created_at', { ascending: false }),
+      supabase.from('team_photos').select('*').order('sort_order'),
     ])
     setPackages(pkgs ?? [])
     setLeads(ls ?? [])
+    setPhotos(ph ?? [])
     setLoading(false)
   }
 
@@ -69,7 +73,6 @@ export default function AdminTeamPackages() {
     setImageFiles([])
     const sorted = [...(pkg.team_package_images ?? [])].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
     setExistingImages(sorted)
-    // Scroll to the row after state update
     setTimeout(() => {
       editRefs.current[pkg.id]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, 50)
@@ -130,6 +133,19 @@ export default function AdminTeamPackages() {
     fetchAll()
   }
 
+  async function handlePhotoDelete(id: string) {
+    if (!confirm('Delete this photo?')) return
+    const supabase = createClient()
+    await supabase.from('team_photos').delete().eq('id', id)
+    fetchAll()
+  }
+
+  async function handlePhotoToggle(id: string, active: boolean) {
+    const supabase = createClient()
+    await supabase.from('team_photos').update({ active: !active }).eq('id', id)
+    fetchAll()
+  }
+
   const filteredPackages = packages.filter(pkg =>
     pkg.name.toLowerCase().includes(search.toLowerCase()) ||
     (pkg.description ?? '').toLowerCase().includes(search.toLowerCase())
@@ -142,12 +158,12 @@ export default function AdminTeamPackages() {
       <h2 className="text-2xl font-bold mb-6 text-white">Team Packages</h2>
 
       <div className="flex gap-4 mb-6 border-b border-[#2e2d2d]">
-        {(['packages', 'leads'] as const).map(t => (
+        {(['packages', 'leads', 'photos'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={`pb-2 px-1 capitalize font-medium text-sm border-b-2 transition ${
               tab === t ? 'border-[#c9a84c] text-[#c9a84c]' : 'border-transparent text-gray-500 hover:text-white'
             }`}>
-            {t === 'leads' ? 'Package Inquiries' : 'Manage Packages'}
+            {t === 'leads' ? 'Package Inquiries' : t === 'photos' ? 'Team Photos' : 'Manage Packages'}
           </button>
         ))}
       </div>
@@ -249,6 +265,48 @@ export default function AdminTeamPackages() {
         </>
       )}
 
+      {tab === 'photos' && (
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-sm text-gray-500">{photos.length} photo(s) — these appear in the carousel at the top of the Team Packages page</p>
+            <label className={`flex items-center gap-2 px-5 py-2 bg-[#c9a84c] text-black text-sm font-semibold rounded-xl hover:bg-[#b8943d] transition cursor-pointer ${uploadingPhoto ? 'opacity-50 pointer-events-none' : ''}`}>
+              + {uploadingPhoto ? 'Uploading...' : 'Add Photos'}
+              <input type="file" accept="image/*" multiple className="hidden" onChange={async (e) => {
+                const files = Array.from(e.target.files ?? [])
+                if (!files.length) return
+                setUploadingPhoto(true)
+                const supabase = createClient()
+                for (let i = 0; i < files.length; i++) {
+                  const url = await uploadImageToR2(files[i], 'team-photos')
+                  await supabase.from('team_photos').insert({ image_url: url, sort_order: photos.length + i, active: true })
+                }
+                setUploadingPhoto(false)
+                fetchAll()
+              }} />
+            </label>
+          </div>
+          {photos.length === 0 ? (
+            <div className="text-center text-gray-500 py-12">No team photos yet. Upload wide/landscape photos for best results.</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {photos.map(photo => (
+                <div key={photo.id} className="relative rounded-xl overflow-hidden border border-[#2e2d2d] group" style={{ aspectRatio: '16/6' }}>
+                  <img src={photo.image_url} alt="Team photo" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
+                    <button onClick={() => handlePhotoToggle(photo.id, photo.active)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${photo.active ? 'bg-yellow-500/80 text-black' : 'bg-green-500/80 text-black'}`}>
+                      {photo.active ? 'Hide' : 'Show'}
+                    </button>
+                    <button onClick={() => handlePhotoDelete(photo.id)} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/80 text-white">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {tab === 'leads' && (
         <div className="space-y-4">
           {leads.length === 0 && <div className="text-center text-gray-500 py-12">No package inquiries yet.</div>}
@@ -327,7 +385,6 @@ function EditForm({ form, setForm, imageFiles, existingImages, setImageFiles, se
             className="w-full bg-[#1e1e1e] border border-[#2e2d2d] text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#c9a84c] transition" />
         </div>
       </div>
-
       <div>
         <label className="block text-sm font-medium text-[#f0ede8] mb-1">Package Images (Carousel)</label>
         <p className="text-xs text-gray-500 mb-3">Upload multiple images — users can swipe through them on the package card.</p>
@@ -362,7 +419,6 @@ function EditForm({ form, setForm, imageFiles, existingImages, setImageFiles, se
           <input type="file" accept="image/*" multiple onChange={handleImageChange} className="hidden" />
         </label>
       </div>
-
       <div className="flex items-center gap-3">
         <input type="checkbox" id="active-check" checked={form.active} onChange={e => setForm({ ...form, active: e.target.checked })}
           className="w-4 h-4 accent-[#c9a84c]" />
