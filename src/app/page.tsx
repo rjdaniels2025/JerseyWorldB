@@ -99,32 +99,34 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── Pricing ── */}
+            {/* ── Pricing ── */}
       <section className="py-16 md:py-32 border-y border-[#2e2d2d]">
         <div className="max-w-7xl mx-auto px-4 sm:px-8">
           <div className="text-center mb-10 md:mb-14">
             <p className="text-[10px] font-semibold tracking-[0.3em] uppercase text-[#c9a84c] mb-2">What We Offer</p>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#f0ede8] tracking-tight">Pricing</h2>
           </div>
-          {promoItems?.[0]?.image_url ? (
+          {promoItems.length === 0 ? (
             <div className="flex justify-center">
-              <div className="relative rounded-2xl overflow-hidden border border-[#2e2d2d] shadow-[0_8px_60px_#00000060] w-full" style={{ maxWidth: '420px', aspectRatio: '9/16' }}>
-                <img src={promoItems?.[0]?.image_url} alt={promoItems?.[0]?.title ?? 'Pricing'} className="w-full h-full object-cover block" />
-                {(promoItems?.[0]?.title || promoItems?.[0].discount_percentage) && (
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#111111cc] via-transparent to-transparent flex items-end p-6">
-                    <div>
-                      {promoItems?.[0]?.title && <h3 className="text-xl font-black text-white mb-1">{promoItems?.[0]?.title}</h3>}
-                      {promoItems?.[0].discount_percentage && <p className="text-[#c9a84c] font-bold">{promoItems?.[0].discount_percentage}% OFF</p>}
-                    </div>
-                  </div>
-                )}
+              <div className="rounded-2xl bg-[#1f1e1e] border border-[#2e2d2d] flex flex-col items-center justify-center gap-4 w-full" style={{ maxWidth: '420px', aspectRatio: '4/3' }}>
+                <p className="text-[10px] tracking-[0.3em] uppercase text-[#2e2d2d]">Add Pricing Image in Admin</p>
               </div>
             </div>
           ) : (
-            <div className="flex justify-center">
-              <div className="rounded-2xl bg-[#1f1e1e] border border-[#2e2d2d] flex flex-col items-center justify-center gap-4 w-full" style={{ maxWidth: '420px', aspectRatio: '9/16' }}>
-                <p className="text-[10px] tracking-[0.3em] uppercase text-[#2e2d2d]">Add Pricing Image in Admin</p>
-              </div>
+            <div className="grid grid-cols-2 gap-6">
+              {promoItems.map((promoItem: any) => (
+                <div key={promoItem.id} className="relative rounded-2xl overflow-hidden border border-[#2e2d2d] shadow-[0_8px_60px_#00000060]" style={{ aspectRatio: '4/3' }}>
+                  <img src={promoItem.image_url} alt={promoItem.title ?? 'Pricing'} className="w-full h-full object-cover block" />
+                  {(promoItem.title || promoItem.discount_percentage) && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#111111cc] via-transparent to-transparent flex items-end p-4">
+                      <div>
+                        {promoItem.title && <h3 className="text-lg font-black text-white mb-1">{promoItem.title}</h3>}
+                        {promoItem.discount_percentage && <p className="text-[#c9a84c] font-bold">{promoItem.discount_percentage}% OFF</p>}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </div>
