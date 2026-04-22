@@ -99,7 +99,7 @@ export default async function Home() {
         </div>
       </section>
 
-            {/* ── Pricing ── */}
+                  {/* ── Pricing ── */}
       <section className="py-16 md:py-32 border-y border-[#2e2d2d]">
         <div className="max-w-7xl mx-auto px-4 sm:px-8">
           <div className="text-center mb-10 md:mb-14">
