@@ -115,7 +115,7 @@ export default async function Home() {
           ) : (
             <div className="grid grid-cols-2 gap-6">
               {promoItems.map((promoItem: any) => (
-                <div key={promoItem.id} className="relative rounded-2xl overflow-hidden border border-[#2e2d2d] shadow-[0_8px_60px_#00000060]" style={{ aspectRatio: '4/3' }}>
+                <div key={promoItem.id} className="relative rounded-2xl overflow-hidden border border-[#2e2d2d] shadow-[0_8px_60px_#00000060]" style={{ aspectRatio: '9/16' }}>
                   <img src={promoItem.image_url} alt={promoItem.title ?? 'Pricing'} className="w-full h-full object-cover block" />
                   {(promoItem.title || promoItem.discount_percentage) && (
                     <div className="absolute inset-0 bg-gradient-to-t from-[#111111cc] via-transparent to-transparent flex items-end p-4">
