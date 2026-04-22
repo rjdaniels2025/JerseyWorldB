@@ -10,7 +10,7 @@ export default function AdminPricing() {
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<any>(null)
   const [form, setForm] = useState({ title: '', description: '', discount_percentage: '', active: true })
-  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imageFiles, setImageFiles] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
   const supabase = createClient()
 
@@ -24,37 +24,46 @@ export default function AdminPricing() {
   const openAdd = () => {
     setEditing(null)
     setForm({ title: '', description: '', discount_percentage: '', active: true })
-    setImageFile(null)
+    setImageFiles([])
     setShowForm(true)
   }
   const openEdit = (p: any) => {
     setEditing(p)
     setForm({ title: p.title ?? '', description: p.description ?? '', discount_percentage: String(p.discount_percentage ?? ''), active: p.active })
-    setImageFile(null)
+    setImageFiles([])
     setShowForm(true)
   }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setUploading(true)
-    let image_url = editing?.image_url ?? null
-
-    if (imageFile) {
-      image_url = await uploadPromotionImage(imageFile)
-    }
-
-    const data = {
-      title: form.title || null,
-      description: form.description || null,
-      discount_percentage: form.discount_percentage ? parseFloat(form.discount_percentage) : null,
-      active: form.active,
-      image_url,
-    }
 
     if (editing) {
-      await supabase.from('promotions').update(data).eq('id', editing.id)
+      // Editing existing — update metadata, optionally replace image
+      let image_url = editing.image_url
+      if (imageFiles.length > 0) {
+        image_url = await uploadPromotionImage(imageFiles[0])
+      }
+      await supabase.from('promotions').update({
+        title: form.title || null,
+        description: form.description || null,
+        discount_percentage: form.discount_percentage ? parseFloat(form.discount_percentage) : null,
+        active: form.active,
+        image_url,
+      }).eq('id', editing.id)
     } else {
-      await supabase.from('promotions').insert(data)
+      // Adding new — insert one row per image
+      const filesToUpload = imageFiles.length > 0 ? imageFiles : [null]
+      for (const file of filesToUpload) {
+        const image_url = file ? await uploadPromotionImage(file) : null
+        await supabase.from('promotions').insert({
+          title: form.title || null,
+          description: form.description || null,
+          discount_percentage: form.discount_percentage ? parseFloat(form.discount_percentage) : null,
+          active: form.active,
+          image_url,
+        })
+      }
     }
     setUploading(false)
     setShowForm(false)
@@ -92,19 +101,27 @@ export default function AdminPricing() {
             <p className="text-xs text-gray-500 mb-6">Best with vertical 9:16 images. All fields optional.</p>
             <form onSubmit={handleSave} className="space-y-4">
               <div>
-                <label className="block text-sm text-gray-400 mb-2">Image <span className="text-gray-600">(optional)</span></label>
+                <label className="block text-sm text-gray-400 mb-2">
+                  {editing ? 'Image' : 'Images'} <span className="text-gray-600">(optional{!editing && ', select multiple'})</span>
+                </label>
                 <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-[#333] rounded-lg cursor-pointer hover:border-[#c9a84c] transition-colors">
                   <Upload size={18} className="text-[#c9a84c]" />
-                  <span className="text-sm text-gray-400">{imageFile ? imageFile.name : 'Click to upload image'}</span>
-                  <input type="file" accept="image/*" className="hidden" onChange={e => setImageFile(e.target.files?.[0] ?? null)} />
+                  <span className="text-sm text-gray-400">
+                    {imageFiles.length > 0 ? `${imageFiles.length} file(s) selected` : 'Click to upload image(s)'}
+                  </span>
+                  <input type="file" accept="image/*" multiple={!editing} className="hidden" onChange={e => setImageFiles(Array.from(e.target.files ?? []))} />
                 </label>
-                {(imageFile || editing?.image_url) && (
-                  <div className="mt-3 flex justify-center">
-                    <div className="relative w-32 rounded-xl overflow-hidden border border-[#333]" style={{ aspectRatio: '9/16' }}>
-                      <img src={imageFile ? URL.createObjectURL(imageFile) : editing.image_url} alt="" className="w-full h-full object-cover" />
+                <div className="mt-3 flex flex-wrap gap-2 justify-center">
+                  {imageFiles.length > 0 ? imageFiles.map((f, i) => (
+                    <div key={i} className="relative w-24 rounded-xl overflow-hidden border border-[#c9a84c40]" style={{ aspectRatio: '4/3' }}>
+                      <img src={URL.createObjectURL(f)} alt="" className="w-full h-full object-cover" />
                     </div>
-                  </div>
-                )}
+                  )) : editing?.image_url ? (
+                    <div className="relative w-24 rounded-xl overflow-hidden border border-[#333]" style={{ aspectRatio: '4/3' }}>
+                      <img src={editing.image_url} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  ) : null}
+                </div>
               </div>
               <div>
                 <label className="block text-sm text-gray-400 mb-1">Title <span className="text-gray-600">(optional)</span></label>
