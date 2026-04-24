@@ -1,4 +1,6 @@
 'use client'
+// @ts-ignore
+import Cropper from 'react-easy-crop'
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -48,6 +50,12 @@ export default function AdminTeamPackages() {
   const [existingImages, setExistingImages] = useState<PackageImage[]>([])
   const [saving, setSaving] = useState(false)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const [cropSrc, setCropSrc] = useState<string | null>(null)
+  const [cropFile, setCropFile] = useState<File | null>(null)
+  const [pendingFiles, setPendingFiles] = useState<File[]>([])
+  const [crop, setCrop] = useState({ x: 0, y: 0 })
+  const [zoom, setZoom] = useState(1)
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null)
   const [search, setSearch] = useState('')
   const editRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
@@ -65,6 +73,65 @@ export default function AdminTeamPackages() {
     setLeads(ls ?? [])
     setPhotos(ph ?? [])
     setLoading(false)
+  }
+
+  function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? [])
+    if (!files.length) return
+    setPendingFiles(files)
+    const url = URL.createObjectURL(files[0])
+    setCropSrc(url)
+    setCropFile(files[0])
+    setCrop({ x: 0, y: 0 })
+    setZoom(1)
+    e.target.value = ''
+  }
+
+  async function getCroppedBlob(imageSrc: string, pixelCrop: any): Promise<Blob> {
+    const image = await new Promise<HTMLImageElement>((res, rej) => {
+      const img = new window.Image()
+      img.onload = () => res(img)
+      img.onerror = rej
+      img.src = imageSrc
+    })
+    const canvas = document.createElement('canvas')
+    canvas.width = pixelCrop.width
+    canvas.height = pixelCrop.height
+    const ctx = canvas.getContext('2d')!
+    ctx.drawImage(image, pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height, 0, 0, pixelCrop.width, pixelCrop.height)
+    return new Promise(res => canvas.toBlob(b => res(b!), 'image/jpeg', 0.92))
+  }
+
+  async function handleCropSave() {
+    if (!cropSrc || !croppedAreaPixels || !cropFile) return
+    setUploadingPhoto(true)
+    setCropSrc(null)
+    try {
+      const blob = await getCroppedBlob(cropSrc, croppedAreaPixels)
+      const croppedFile = new File([blob], cropFile.name, { type: 'image/jpeg' })
+      const url = await uploadImageToR2(croppedFile, 'team-photos')
+      if (!url) throw new Error('Upload returned no URL')
+      const supabase = createClient()
+      const { error } = await supabase.from('team_photos').insert({ image_url: url, sort_order: photos.length, active: true })
+      if (error) throw new Error(error.message)
+      // If there are more pending files, open next one
+      const remaining = pendingFiles.slice(1)
+      setPendingFiles(remaining)
+      if (remaining.length > 0) {
+        const nextUrl = URL.createObjectURL(remaining[0])
+        setCropSrc(nextUrl)
+        setCropFile(remaining[0])
+        setCrop({ x: 0, y: 0 })
+        setZoom(1)
+        setUploadingPhoto(false)
+      } else {
+        setUploadingPhoto(false)
+        fetchAll()
+      }
+    } catch (err: any) {
+      alert('Upload failed: ' + (err?.message ?? 'Unknown error'))
+      setUploadingPhoto(false)
+    }
   }
 
   function startEdit(pkg: Package) {
@@ -271,18 +338,7 @@ export default function AdminTeamPackages() {
             <p className="text-sm text-gray-500">{photos.length} photo(s) — these appear in the carousel at the top of the Team Packages page</p>
             <label className={`flex items-center gap-2 px-5 py-2 bg-[#c9a84c] text-black text-sm font-semibold rounded-xl hover:bg-[#b8943d] transition cursor-pointer ${uploadingPhoto ? 'opacity-50 pointer-events-none' : ''}`}>
               + {uploadingPhoto ? 'Uploading...' : 'Add Photos'}
-              <input type="file" accept="image/*" multiple className="hidden" onChange={async (e) => {
-                const files = Array.from(e.target.files ?? [])
-                if (!files.length) return
-                setUploadingPhoto(true)
-                const supabase = createClient()
-                for (let i = 0; i < files.length; i++) {
-                  const url = await uploadImageToR2(files[i], 'team-photos')
-                  await supabase.from('team_photos').insert({ image_url: url, sort_order: photos.length + i, active: true })
-                }
-                setUploadingPhoto(false)
-                fetchAll()
-              }} />
+              <input type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoSelect} />
             </label>
           </div>
           {photos.length === 0 ? (
@@ -339,6 +395,49 @@ export default function AdminTeamPackages() {
               )}
             </div>
           ))}
+        </div>
+      )}
+      {/* Crop Modal */}
+      {cropSrc && (
+        <div className="fixed inset-0 z-50 bg-black/95 flex flex-col">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#2e2d2d]">
+            <div>
+              <h3 className="text-white font-bold">Crop Team Photo</h3>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Drag to reposition · Scroll to zoom · 16:6 ratio (carousel format)
+                {pendingFiles.length > 1 && <span className="ml-2 text-[#c9a84c]">{pendingFiles.length} photos remaining</span>}
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => { setCropSrc(null); setPendingFiles([]) }}
+                className="px-4 py-2 border border-[#2e2d2d] text-gray-400 rounded-xl text-sm hover:bg-[#1a1a1a] transition">
+                Cancel
+              </button>
+              <button onClick={handleCropSave} disabled={uploadingPhoto}
+                className="px-6 py-2 bg-[#c9a84c] text-black font-bold rounded-xl text-sm hover:bg-[#b8943d] transition disabled:opacity-50">
+                {uploadingPhoto ? 'Saving...' : 'Save & Upload'}
+              </button>
+            </div>
+          </div>
+          <div className="relative flex-1">
+            <Cropper
+              image={cropSrc}
+              crop={crop}
+              zoom={zoom}
+              aspect={16 / 6}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={(_: any, pixels: any) => setCroppedAreaPixels(pixels)}
+              style={{ containerStyle: { background: '#0e0e0e' } }}
+            />
+          </div>
+          <div className="px-6 py-4 border-t border-[#2e2d2d] flex items-center gap-4">
+            <span className="text-xs text-gray-500 shrink-0">Zoom</span>
+            <input type="range" min={1} max={3} step={0.01} value={zoom}
+              onChange={e => setZoom(parseFloat(e.target.value))}
+              className="w-full max-w-xs accent-[#c9a84c]" />
+            <span className="text-xs text-gray-500">{zoom.toFixed(1)}x</span>
+          </div>
         </div>
       )}
     </div>
@@ -434,6 +533,49 @@ function EditForm({ form, setForm, imageFiles, existingImages, setImageFiles, se
           Cancel
         </button>
       </div>
+      {/* Crop Modal */}
+      {cropSrc && (
+        <div className="fixed inset-0 z-50 bg-black/95 flex flex-col">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#2e2d2d]">
+            <div>
+              <h3 className="text-white font-bold">Crop Team Photo</h3>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Drag to reposition · Scroll to zoom · 16:6 ratio (carousel format)
+                {pendingFiles.length > 1 && <span className="ml-2 text-[#c9a84c]">{pendingFiles.length} photos remaining</span>}
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => { setCropSrc(null); setPendingFiles([]) }}
+                className="px-4 py-2 border border-[#2e2d2d] text-gray-400 rounded-xl text-sm hover:bg-[#1a1a1a] transition">
+                Cancel
+              </button>
+              <button onClick={handleCropSave} disabled={uploadingPhoto}
+                className="px-6 py-2 bg-[#c9a84c] text-black font-bold rounded-xl text-sm hover:bg-[#b8943d] transition disabled:opacity-50">
+                {uploadingPhoto ? 'Saving...' : 'Save & Upload'}
+              </button>
+            </div>
+          </div>
+          <div className="relative flex-1">
+            <Cropper
+              image={cropSrc}
+              crop={crop}
+              zoom={zoom}
+              aspect={16 / 6}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={(_: any, pixels: any) => setCroppedAreaPixels(pixels)}
+              style={{ containerStyle: { background: '#0e0e0e' } }}
+            />
+          </div>
+          <div className="px-6 py-4 border-t border-[#2e2d2d] flex items-center gap-4">
+            <span className="text-xs text-gray-500 shrink-0">Zoom</span>
+            <input type="range" min={1} max={3} step={0.01} value={zoom}
+              onChange={e => setZoom(parseFloat(e.target.value))}
+              className="w-full max-w-xs accent-[#c9a84c]" />
+            <span className="text-xs text-gray-500">{zoom.toFixed(1)}x</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
