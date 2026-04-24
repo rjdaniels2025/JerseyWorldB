@@ -77,12 +77,19 @@ export default function AdminTeamPackages() {
   }
 
   async function handleCropExisting(photo: any) {
-    // Load existing image URL into crop modal for re-cropping
-    setEditingPhotoId(photo.id)
-    setCropSrc(photo.image_url)
-    setCropFile(null)
-    setCrop({ x: 0, y: 0 })
-    setZoom(1)
+    try {
+      // Fetch image as blob to avoid cross-origin canvas security error
+      const res = await fetch(photo.image_url)
+      const blob = await res.blob()
+      const blobUrl = URL.createObjectURL(blob)
+      setEditingPhotoId(photo.id)
+      setCropSrc(blobUrl)
+      setCropFile(new File([blob], 'team-photo.jpg', { type: blob.type }))
+      setCrop({ x: 0, y: 0 })
+      setZoom(1)
+    } catch {
+      alert('Could not load image for editing. Try again.')
+    }
   }
 
   function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
