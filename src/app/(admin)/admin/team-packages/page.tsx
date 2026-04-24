@@ -51,6 +51,7 @@ export default function AdminTeamPackages() {
   const [saving, setSaving] = useState(false)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [cropSrc, setCropSrc] = useState<string | null>(null)
+  const [editingPhotoId, setEditingPhotoId] = useState<string | null>(null)
   const [cropFile, setCropFile] = useState<File | null>(null)
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const [crop, setCrop] = useState({ x: 0, y: 0 })
@@ -73,6 +74,15 @@ export default function AdminTeamPackages() {
     setLeads(ls ?? [])
     setPhotos(ph ?? [])
     setLoading(false)
+  }
+
+  async function handleCropExisting(photo: any) {
+    // Load existing image URL into crop modal for re-cropping
+    setEditingPhotoId(photo.id)
+    setCropSrc(photo.image_url)
+    setCropFile(null)
+    setCrop({ x: 0, y: 0 })
+    setZoom(1)
   }
 
   function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -103,30 +113,42 @@ export default function AdminTeamPackages() {
   }
 
   async function handleCropSave() {
-    if (!cropSrc || !croppedAreaPixels || !cropFile) return
+    if (!cropSrc || !croppedAreaPixels) return
     setUploadingPhoto(true)
-    setCropSrc(null)
+    const supabase = createClient()
     try {
       const blob = await getCroppedBlob(cropSrc, croppedAreaPixels)
-      const croppedFile = new File([blob], cropFile.name, { type: 'image/jpeg' })
+      const filename = cropFile?.name ?? 'team-photo.jpg'
+      const croppedFile = new File([blob], filename, { type: 'image/jpeg' })
       const url = await uploadImageToR2(croppedFile, 'team-photos')
       if (!url) throw new Error('Upload returned no URL')
-      const supabase = createClient()
-      const { error } = await supabase.from('team_photos').insert({ image_url: url, sort_order: photos.length, active: true })
-      if (error) throw new Error(error.message)
-      // If there are more pending files, open next one
-      const remaining = pendingFiles.slice(1)
-      setPendingFiles(remaining)
-      if (remaining.length > 0) {
-        const nextUrl = URL.createObjectURL(remaining[0])
-        setCropSrc(nextUrl)
-        setCropFile(remaining[0])
-        setCrop({ x: 0, y: 0 })
-        setZoom(1)
-        setUploadingPhoto(false)
-      } else {
+
+      if (editingPhotoId) {
+        // Replacing existing photo
+        const { error } = await supabase.from('team_photos').update({ image_url: url }).eq('id', editingPhotoId)
+        if (error) throw new Error(error.message)
+        setEditingPhotoId(null)
+        setCropSrc(null)
         setUploadingPhoto(false)
         fetchAll()
+      } else {
+        // New upload — check for more pending files
+        const { error } = await supabase.from('team_photos').insert({ image_url: url, sort_order: photos.length, active: true })
+        if (error) throw new Error(error.message)
+        const remaining = pendingFiles.slice(1)
+        setPendingFiles(remaining)
+        if (remaining.length > 0) {
+          const nextUrl = URL.createObjectURL(remaining[0])
+          setCropSrc(nextUrl)
+          setCropFile(remaining[0])
+          setCrop({ x: 0, y: 0 })
+          setZoom(1)
+          setUploadingPhoto(false)
+        } else {
+          setCropSrc(null)
+          setUploadingPhoto(false)
+          fetchAll()
+        }
       }
     } catch (err: any) {
       alert('Upload failed: ' + (err?.message ?? 'Unknown error'))
@@ -349,6 +371,9 @@ export default function AdminTeamPackages() {
                 <div key={photo.id} className="relative rounded-xl overflow-hidden border border-[#2e2d2d] group" style={{ aspectRatio: '16/6' }}>
                   <img src={photo.image_url} alt="Team photo" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
+                    <button onClick={() => handleCropExisting(photo)} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#c9a84c]/90 text-black">
+                      ✂ Crop
+                    </button>
                     <button onClick={() => handlePhotoToggle(photo.id, photo.active)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${photo.active ? 'bg-yellow-500/80 text-black' : 'bg-green-500/80 text-black'}`}>
                       {photo.active ? 'Hide' : 'Show'}
                     </button>
@@ -402,14 +427,14 @@ export default function AdminTeamPackages() {
         <div className="fixed inset-0 z-50 bg-black/95 flex flex-col">
           <div className="flex items-center justify-between px-6 py-4 border-b border-[#2e2d2d]">
             <div>
-              <h3 className="text-white font-bold">Crop Team Photo</h3>
+              <h3 className="text-white font-bold">{editingPhotoId ? "Re-crop Photo" : "Crop Team Photo"}</h3>
               <p className="text-xs text-gray-500 mt-0.5">
                 Drag to reposition · Scroll to zoom · 16:6 ratio (carousel format)
                 {pendingFiles.length > 1 && <span className="ml-2 text-[#c9a84c]">{pendingFiles.length} photos remaining</span>}
               </p>
             </div>
             <div className="flex gap-3">
-              <button onClick={() => { setCropSrc(null); setPendingFiles([]) }}
+              <button onClick={() => { setCropSrc(null); setPendingFiles([]); setEditingPhotoId(null) }}
                 className="px-4 py-2 border border-[#2e2d2d] text-gray-400 rounded-xl text-sm hover:bg-[#1a1a1a] transition">
                 Cancel
               </button>
