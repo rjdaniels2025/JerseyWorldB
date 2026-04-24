@@ -118,12 +118,12 @@ export default function TeamPackagesClient({ packages, teamPhotos }: Props) {
               <>
                 <button
                   onClick={() => setCarouselIndex(i => i === 0 ? teamPhotos.length - 1 : i - 1)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white rounded-full w-9 h-9 flex items-center justify-center text-lg transition z-10">
+                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-[#c9a84c] text-white hover:text-black rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold transition-all duration-200 z-10 shadow-lg border border-white/20 hover:border-[#c9a84c]">
                   ‹
                 </button>
                 <button
                   onClick={() => setCarouselIndex(i => (i + 1) % teamPhotos.length)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white rounded-full w-9 h-9 flex items-center justify-center text-lg transition z-10">
+                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-[#c9a84c] text-white hover:text-black rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold transition-all duration-200 z-10 shadow-lg border border-white/20 hover:border-[#c9a84c]">
                   ›
                 </button>
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
