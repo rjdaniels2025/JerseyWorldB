@@ -533,49 +533,6 @@ function EditForm({ form, setForm, imageFiles, existingImages, setImageFiles, se
           Cancel
         </button>
       </div>
-      {/* Crop Modal */}
-      {cropSrc && (
-        <div className="fixed inset-0 z-50 bg-black/95 flex flex-col">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-[#2e2d2d]">
-            <div>
-              <h3 className="text-white font-bold">Crop Team Photo</h3>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Drag to reposition · Scroll to zoom · 16:6 ratio (carousel format)
-                {pendingFiles.length > 1 && <span className="ml-2 text-[#c9a84c]">{pendingFiles.length} photos remaining</span>}
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <button onClick={() => { setCropSrc(null); setPendingFiles([]) }}
-                className="px-4 py-2 border border-[#2e2d2d] text-gray-400 rounded-xl text-sm hover:bg-[#1a1a1a] transition">
-                Cancel
-              </button>
-              <button onClick={handleCropSave} disabled={uploadingPhoto}
-                className="px-6 py-2 bg-[#c9a84c] text-black font-bold rounded-xl text-sm hover:bg-[#b8943d] transition disabled:opacity-50">
-                {uploadingPhoto ? 'Saving...' : 'Save & Upload'}
-              </button>
-            </div>
-          </div>
-          <div className="relative flex-1">
-            <Cropper
-              image={cropSrc}
-              crop={crop}
-              zoom={zoom}
-              aspect={16 / 6}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={(_: any, pixels: any) => setCroppedAreaPixels(pixels)}
-              style={{ containerStyle: { background: '#0e0e0e' } }}
-            />
-          </div>
-          <div className="px-6 py-4 border-t border-[#2e2d2d] flex items-center gap-4">
-            <span className="text-xs text-gray-500 shrink-0">Zoom</span>
-            <input type="range" min={1} max={3} step={0.01} value={zoom}
-              onChange={e => setZoom(parseFloat(e.target.value))}
-              className="w-full max-w-xs accent-[#c9a84c]" />
-            <span className="text-xs text-gray-500">{zoom.toFixed(1)}x</span>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
