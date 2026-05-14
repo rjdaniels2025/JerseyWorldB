@@ -16,6 +16,8 @@ const CATEGORY_SIZES: Record<string, string[]> = {
   Racing:     ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'],
   Cycling:    ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'],
   Tennis:     ['XS', 'S', 'M', 'L', 'XL', '2XL'],
+  Hoodies:    ['S', 'M', 'L', 'XL', '2XL', '3XL'],
+  Tracksuits: ['Kids S', 'Kids M', 'Kids L', 'Kids XL', 'Kids 2XL', 'S', 'M', 'L', 'XL', '2XL'],
 }
 const DEFAULT_SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL']
 
