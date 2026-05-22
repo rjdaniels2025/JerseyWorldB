@@ -1,3 +1,10 @@
+
+const DiscordIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M20.317 4.369A19.791 19.791 0 0 0 15.885 3c-.191.328-.403.775-.552 1.124a18.27 18.27 0 0 0-5.066 0A12.64 12.64 0 0 0 9.715 3a19.736 19.736 0 0 0-4.433 1.369C2.478 8.553 1.71 12.63 2.093 16.649a19.9 19.9 0 0 0 5.993 3.051c.483-.662.913-1.362 1.282-2.093-.705-.267-1.377-.6-2.007-.993.053-.038.105-.077.156-.117 3.872 1.8 8.077 1.8 11.903 0 .052.043.104.082.156.117-.63.393-1.303.726-2.008.993.37.731.8 1.431 1.283 2.093a19.87 19.87 0 0 0 5.993-3.051c.449-4.657-.768-8.697-3.524-12.28Z"/>
+  </svg>
+)
+
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -30,6 +37,9 @@ export default function Footer() {
               className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl border border-[#3a3838] text-[#a09890] text-sm hover:border-[#c9a84c] hover:text-[#c9a84c] transition-all duration-200">
               <InstagramIcon />
               Instagram
+            </a>
+            <a href="https://discord.gg/9Xgua8Mf" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-[#c9a84c] transition-colors">
+              <DiscordIcon /> Discord
             </a>
             <a href="https://tiktok.com/@JerseyWorldB" target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl border border-[#3a3838] text-[#a09890] text-sm hover:border-[#c9a84c] hover:text-[#c9a84c] transition-all duration-200">
