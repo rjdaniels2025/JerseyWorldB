@@ -38,7 +38,7 @@ export default function Footer() {
               <InstagramIcon />
               Instagram
             </a>
-            <a href="https://discord.gg/9Xgua8Mf" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-[#c9a84c] transition-colors">
+            <a href="https://discord.gg/9Xgua8Mf" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl border border-[#3a3838] text-[#a09890] text-sm hover:border-[#c9a84c] hover:text-[#c9a84c] transition-all duration-200">
               <DiscordIcon /> Discord
             </a>
             <a href="https://tiktok.com/@JerseyWorldB" target="_blank" rel="noopener noreferrer"
