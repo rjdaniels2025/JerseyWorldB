@@ -55,6 +55,13 @@ export default function ProductPage() {
   )
 
   const images = product.product_images?.sort((a: any, b: any) => a.sort_order - b.sort_order) ?? []
+  const soccerCategories = ['Soccer', '2026 World Cup']
+  const productSizes: string[] = product.sizes ?? []
+  const adultSmallIndex = productSizes.indexOf('S')
+  const xsInsertIndex = adultSmallIndex >= 0 ? adultSmallIndex : productSizes.length
+  const availableSizes = soccerCategories.includes(product.categories?.name) && !productSizes.includes('XS')
+    ? [...productSizes.slice(0, xsInsertIndex), 'XS', ...productSizes.slice(xsInsertIndex)]
+    : productSizes
 
   return (
     <div className="min-h-screen pt-24 pb-20">
@@ -145,11 +152,11 @@ export default function ProductPage() {
                       className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#2e2d2d] rounded-xl text-[#f0ede8] text-sm placeholder-[#444] focus:outline-none focus:ring-2 focus:ring-[#c9a84c]" />
                   </div>
                 ))}
-                {product.sizes?.length > 0 && (
+                {availableSizes.length > 0 && (
                   <select value={form.size} required onChange={e => setForm(f => ({ ...f, size: e.target.value }))}
                     className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#2e2d2d] rounded-xl text-[#f0ede8] text-sm focus:outline-none focus:ring-2 focus:ring-[#c9a84c]">
                     <option value="" disabled>Select a size *</option>
-                    {product.sizes.map((s: string) => <option key={s} value={s}>{s}</option>)}
+                    {availableSizes.map((s: string) => <option key={s} value={s}>{s}</option>)}
                   </select>
                 )}
                 <div className="grid grid-cols-2 gap-3">
